@@ -1,0 +1,16 @@
+packages:
+  - "."
+
+# Reduce el riesgo de adoptar una versión recién publicada antes de que
+# exista tiempo razonable para que la comunidad/registro detecten incidentes.
+minimumReleaseAge: 1440
+
+# Evita que dependencias transitivas obtengan código desde Git/tarballs
+# externos al registry configurado.
+blockExoticSubdeps: true
+
+# Las nuevas dependencias directas se guardan con versión exacta.
+saveExact: true
+
+audit:
+  level: high
