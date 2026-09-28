@@ -38,6 +38,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Security baseline
+        run: pnpm security:baseline
+
       - name: Typecheck
         run: pnpm typecheck
 
