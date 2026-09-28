@@ -78,7 +78,7 @@ La aplicación parte de deny-by-default para UI generativa: los datos selecciona
 
 La CSP actual permite scripts y estilos inline porque Next.js los necesita en esta Foundation. Endurecer con nonces/hashes queda como tarea previa a exposición pública.
 
-Para dependencias, pnpm se fija a una versión concreta y se configura una ventana mínima de publicación y bloqueo de fuentes transitivas exóticas. Una vez generado `pnpm-lock.yaml`, CI pasará obligatoriamente a instalación congelada.
+Para dependencias, pnpm se fija a una versión concreta, se configura una ventana mínima de publicación y bloqueo de fuentes transitivas exóticas, y el CI usa `pnpm install --frozen-lockfile` sobre el `pnpm-lock.yaml` versionado.
 
 ## Criterios para cerrar Foundation
 

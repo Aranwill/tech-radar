@@ -33,10 +33,8 @@ jobs:
         with:
           node-version: 24
 
-      # Foundation aún no tiene pnpm-lock.yaml versionado.
-      # Se cambia a --frozen-lockfile en cuanto generemos y revisemos el lockfile.
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Typecheck
         run: pnpm typecheck

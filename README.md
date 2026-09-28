@@ -31,7 +31,7 @@ Luego abrir http://localhost:3000.
 
 `next-env.d.ts` es generado por Next.js y permanece ignorado por Git. El script de typecheck ejecuta `next typegen` antes de TypeScript para garantizar que los tipos generados existan.
 
-> El primer `pnpm install` generará `pnpm-lock.yaml`. Debe versionarse antes de considerar cerrada la Foundation para asegurar instalaciones reproducibles. Hasta entonces el CI usa `--no-frozen-lockfile` de forma temporal.
+> `pnpm-lock.yaml` está versionado y el CI instala dependencias con `pnpm install --frozen-lockfile` para mantener una resolución reproducible.
 
 ## Seguridad de dependencias
 
