@@ -30,9 +30,9 @@ export default function Home() {
           <small>Próximamente: 7 días y 30 días.</small>
         </article>
         <article className="context-card">
-          <span className="context-label">Estado</span>
-          <strong>Foundation</strong>
-          <small>Datos de demostración · sin ingestión externa.</small>
+          <span className="context-label">Fuentes activas</span>
+          <strong>0 conectadas</strong>
+          <small>Foundation usa datos de demostración hasta habilitar la primera ingestión real.</small>
         </article>
       </section>
 
