@@ -13,6 +13,8 @@ Construir una base pequeña, desplegable y entendible para un radar global de in
 - `minimumReleaseAge: 1440` introduce una espera de 24 horas antes de adoptar versiones nuevas.
 - `blockExoticSubdeps: true` impide fuentes transitivas Git/tarball fuera del registry.
 - `saveExact: true` evita rangos nuevos en dependencias directas.
+- `next-env.d.ts` es generado por Next.js y no se versiona.
+- El typecheck ejecuta `next typegen` antes de `tsc --noEmit`.
 
 El cambio a pnpm no elimina el riesgo del registry npm: la defensa depende también del lockfile, revisión de cambios, auditoría, permisos mínimos y políticas de instalación.
 
@@ -82,7 +84,7 @@ Para dependencias, pnpm se fija a una versión concreta y se configura una venta
 
 1. `pnpm-lock.yaml` versionado y revisado.
 2. CI usando `pnpm install --frozen-lockfile`.
-3. Typecheck PASS.
+3. `pnpm typecheck` PASS con generación previa de tipos Next.js.
 4. Build de producción PASS.
 5. `pnpm audit --prod --audit-level=high` PASS.
 6. Evaluar y, si resulta compatible con el árbol, incorporar verificación de firmas del registry.
