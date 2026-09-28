@@ -50,3 +50,8 @@ El datasource usa caché de 15 minutos. No utilizamos todavía endpoints de bús
 Esta versión no muestra crecimiento 7d/30d para datos reales porque aún no existe histórico propio. Inventar crecimiento a partir del valor actual violaría la trazabilidad del proyecto.
 
 La siguiente etapa será persistir snapshots y derivar momentum de nuestras propias observaciones.
+
+
+## Semántica de issues
+
+El campo `open_issues_count` de GitHub se expone en la UI como **issues/PR abiertas** para evitar presentarlo como un conteo exclusivo de Issues. En la API REST de GitHub, los pull requests comparten la semántica base de Issues y deben distinguirse explícitamente cuando se necesita un conteo separado.

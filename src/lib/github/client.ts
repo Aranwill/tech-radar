@@ -83,7 +83,7 @@ async function fetchRepository(repository: (typeof curatedRepositories)[number])
     url: raw.html_url,
     stars: raw.stargazers_count,
     forks: raw.forks_count,
-    openIssues: raw.open_issues_count,
+    openIssuesAndPullRequests: raw.open_issues_count,
     language: (raw.language ?? "Sin dato").slice(0, 40),
     tags: raw.topics.slice(0, 6).map((topic) => topic.slice(0, 30)),
     updatedAt: raw.updated_at,
