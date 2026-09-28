@@ -57,8 +57,8 @@ export default function Home() {
       <LiveGithubRepositories />
 
       <footer className="footer-note">
-        <strong>Foundation 0.1</strong>
-        <span>UI estructurada · source-first · mobile-first · PWA</span>
+        <strong>Tech Radar</strong>
+        <span>source-first · datos verificables · mobile-first · PWA</span>
       </footer>
     </main>
   );

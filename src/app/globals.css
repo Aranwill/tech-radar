@@ -367,15 +367,23 @@ h1 {
 }
 
 .repo-status-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
   margin: 1rem 0;
   padding: 0.75rem 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   color: var(--muted);
   font-size: 0.78rem;
+}
+
+.repo-status-row span:nth-child(2) {
+  text-align: center;
+}
+
+.repo-status-row span:last-child {
+  text-align: right;
 }
 
 .tag-row {
@@ -390,6 +398,11 @@ h1 {
   border-radius: 999px;
   padding: 0.35rem 0.55rem;
   font-size: 0.76rem;
+}
+
+.tag-placeholder {
+  border-style: dashed;
+  opacity: 0.72;
 }
 
 .stat-value {
@@ -421,8 +434,31 @@ h1 {
   gap: 1rem;
 }
 
+.repository-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.repository-card-main {
+  flex: 1;
+}
+
+.repo-description {
+  min-height: 3.2rem;
+  margin-bottom: 0;
+}
+
+.repo-description.is-empty {
+  font-style: italic;
+  opacity: 0.82;
+}
+
 .live-repository-card {
   min-width: 0;
+}
+
+.live-repository-card .card-footer {
+  margin-top: auto;
 }
 
 .live-status-card {
@@ -479,8 +515,13 @@ h1 {
   }
 
   .repo-status-row {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 0.35rem;
+  }
+
+  .repo-status-row span:nth-child(2),
+  .repo-status-row span:last-child {
+    text-align: left;
   }
 
   .footer-note {

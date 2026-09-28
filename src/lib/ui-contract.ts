@@ -25,7 +25,7 @@ export const repositoryBlockSchema = z.object({
   url: safeUrl,
   stars: z.number().int().nonnegative(),
   forks: z.number().int().nonnegative().optional(),
-  openIssues: z.number().int().nonnegative().optional(),
+  openIssuesAndPullRequests: z.number().int().nonnegative().optional(),
   growth7d: z.number().optional(),
   language: z.string().min(1).max(40),
   tags: z.array(z.string().min(1).max(30)).max(6),
