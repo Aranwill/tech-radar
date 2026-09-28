@@ -14,6 +14,10 @@ El proyecto se encuentra en Foundation y todavía no está publicado como servic
 - Endpoints futuros de ingestión tendrán allowlists, timeouts, límites de tamaño y mitigación SSRF.
 - Permisos de GitHub Actions mínimos por defecto.
 - Dependencias auditadas y actualizadas de manera controlada.
+- pnpm fijado a versión exacta; no se usa npm como package manager del proyecto.
+- Versiones recién publicadas tienen un cooldown mínimo de 24 horas salvo excepción explícita y revisada.
+- Dependencias transitivas no pueden resolver fuentes Git/tarball exóticas.
+- El lockfile será obligatorio y congelado en CI al cerrar Foundation.
 - Logs sin credenciales, tokens ni contenido sensible.
 
 ## Reporte de vulnerabilidades

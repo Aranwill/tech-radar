@@ -22,19 +22,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.28.0
+          run_install: false
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 24
 
+      # Foundation aún no tiene pnpm-lock.yaml versionado.
+      # Se cambia a --frozen-lockfile en cuanto generemos y revisemos el lockfile.
       - name: Install dependencies
-        run: npm install --no-fund
+        run: pnpm install --no-frozen-lockfile
 
       - name: Typecheck
-        run: npm run typecheck
+        run: pnpm typecheck
 
       - name: Build
-        run: npm run build
+        run: pnpm build
 
       - name: Audit production dependencies
-        run: npm audit --omit=dev --audit-level=high
+        run: pnpm audit --prod --audit-level=high

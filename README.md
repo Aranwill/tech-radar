@@ -7,6 +7,7 @@ Tech Radar es un radar de información tecnológica orientado a señal, trazabil
 ## Foundation
 
 - Next.js + React + TypeScript.
+- pnpm 11.28.0 fijado como package manager.
 - Tailwind CSS 4 y design tokens propios.
 - PWA mínima con manifest y service worker sin caché persistente todavía.
 - Tema claro, oscuro y sistema.
@@ -14,20 +15,24 @@ Tech Radar es un radar de información tecnológica orientado a señal, trazabil
 - Validación de contratos con Zod.
 - Headers de seguridad y permisos mínimos.
 - CI de typecheck, build y auditoría de dependencias de producción.
-- Dependabot para npm y GitHub Actions.
+- Dependabot para pnpm/npm ecosystem y GitHub Actions.
 
 ## Desarrollo local
 
-Requiere Node.js 20.19 o superior.
+Requiere Node.js 20.19 o superior y pnpm 11.28.0.
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Luego abrir http://localhost:3000.
 
-> El primer `npm install` generará `package-lock.json`. Debe versionarse antes de considerar cerrada la Foundation para asegurar instalaciones reproducibles.
+> El primer `pnpm install` generará `pnpm-lock.yaml`. Debe versionarse antes de considerar cerrada la Foundation para asegurar instalaciones reproducibles. Hasta entonces el CI usa `--no-frozen-lockfile` de forma temporal.
+
+## Seguridad de dependencias
+
+La configuración del proyecto aplica una espera mínima de 24 horas para versiones recién publicadas y bloquea fuentes transitivas exóticas. pnpm reduce superficie de instalación, pero sigue consumiendo normalmente el registro npm: cambiar de package manager no sustituye la revisión de dependencias, lockfile y auditorías.
 
 ## Estado
 

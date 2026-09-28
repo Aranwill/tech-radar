@@ -4,6 +4,18 @@
 
 Construir una base pequeña, desplegable y entendible para un radar global de información tecnológica. Esta etapa no intenta resolver ingestión, ranking ni IA: establece la interfaz, los contratos y los límites de seguridad.
 
+## Toolchain
+
+- Node.js 20.19+.
+- pnpm 11.28.0 fijado en `package.json`.
+- No se usa npm como package manager del proyecto.
+- `pnpm-workspace.yaml` concentra la política local de dependencias.
+- `minimumReleaseAge: 1440` introduce una espera de 24 horas antes de adoptar versiones nuevas.
+- `blockExoticSubdeps: true` impide fuentes transitivas Git/tarball fuera del registry.
+- `saveExact: true` evita rangos nuevos en dependencias directas.
+
+El cambio a pnpm no elimina el riesgo del registry npm: la defensa depende también del lockfile, revisión de cambios, auditoría, permisos mínimos y políticas de instalación.
+
 ## Alcance V1
 
 - PWA responsive y mobile-first.
@@ -64,12 +76,16 @@ La aplicación parte de deny-by-default para UI generativa: los datos selecciona
 
 La CSP actual permite scripts y estilos inline porque Next.js los necesita en esta Foundation. Endurecer con nonces/hashes queda como tarea previa a exposición pública.
 
+Para dependencias, pnpm se fija a una versión concreta y se configura una ventana mínima de publicación y bloqueo de fuentes transitivas exóticas. Una vez generado `pnpm-lock.yaml`, CI pasará obligatoriamente a instalación congelada.
+
 ## Criterios para cerrar Foundation
 
-1. `package-lock.json` versionado.
-2. Typecheck PASS.
-3. Build de producción PASS.
-4. Auditoría de dependencias de producción sin vulnerabilidades altas conocidas.
-5. Revisión manual responsive claro/oscuro.
-6. Revisión de headers de seguridad.
-7. Sin secretos o archivos locales en Git.
+1. `pnpm-lock.yaml` versionado y revisado.
+2. CI usando `pnpm install --frozen-lockfile`.
+3. Typecheck PASS.
+4. Build de producción PASS.
+5. `pnpm audit --prod --audit-level=high` PASS.
+6. Evaluar y, si resulta compatible con el árbol, incorporar verificación de firmas del registry.
+7. Revisión manual responsive claro/oscuro.
+8. Revisión de headers de seguridad.
+9. Sin secretos o archivos locales en Git.
