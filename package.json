@@ -12,7 +12,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "security:baseline": "node scripts/security-baseline.mjs"
   },
   "dependencies": {
     "next": "16.3.6",
