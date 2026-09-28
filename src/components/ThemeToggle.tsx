@@ -2,29 +2,31 @@
 
 import { useEffect, useState } from "react";
 
-type ThemeMode = "light" | "dark" | "system";
+type ThemeMode = "light" | "dark";
 
-const modes: Array<{ value: ThemeMode; label: string }> = [
-  { value: "light", label: "Claro" },
-  { value: "dark", label: "Oscuro" },
-  { value: "system", label: "Sistema" },
+const modes: Array<{ value: ThemeMode; label: string; icon: string }> = [
+  { value: "light", label: "Claro", icon: "☀" },
+  { value: "dark", label: "Oscuro", icon: "☾" },
 ];
 
 function applyTheme(mode: ThemeMode) {
-  const root = document.documentElement;
-  if (mode === "system") {
-    root.removeAttribute("data-theme");
-    return;
+  document.documentElement.dataset.theme = mode;
+}
+
+function getInitialTheme(): ThemeMode {
+  const stored = window.localStorage.getItem("tech-radar-theme");
+  if (stored === "light" || stored === "dark") {
+    return stored;
   }
-  root.dataset.theme = mode;
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 export function ThemeToggle() {
-  const [mode, setMode] = useState<ThemeMode>("system");
+  const [mode, setMode] = useState<ThemeMode>("dark");
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("tech-radar-theme");
-    const initial = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+    const initial = getInitialTheme();
     setMode(initial);
     applyTheme(initial);
   }, []);
@@ -41,10 +43,15 @@ export function ThemeToggle() {
         <button
           key={item.value}
           type="button"
+          aria-label={item.label}
+          title={item.label}
           aria-pressed={mode === item.value}
           onClick={() => selectMode(item.value)}
         >
-          {item.label}
+          <span className="theme-icon" aria-hidden="true">
+            {item.icon}
+          </span>
+          <span className="sr-only">{item.label}</span>
         </button>
       ))}
     </div>
