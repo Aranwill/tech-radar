@@ -1,3 +1,4 @@
+import { LiveGithubRepositories } from "@/components/LiveGithubRepositories";
 import { StructuredFeed } from "@/components/StructuredFeed";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { demoDashboard } from "@/lib/demo-data";
@@ -31,8 +32,8 @@ export default function Home() {
         </article>
         <article className="context-card">
           <span className="context-label">Fuentes activas</span>
-          <strong>0 conectadas</strong>
-          <small>Foundation usa datos de demostración hasta habilitar la primera ingestión real.</small>
+          <strong>1 conectada</strong>
+          <small>GitHub REST API habilitada con catálogo curado y caché server-side.</small>
         </article>
       </section>
 
@@ -53,6 +54,7 @@ export default function Home() {
       </section>
 
       <StructuredFeed blocks={demoDashboard.blocks} />
+      <LiveGithubRepositories />
 
       <footer className="footer-note">
         <strong>Foundation 0.1</strong>
