@@ -36,7 +36,7 @@ for (const file of sourceFiles) {
     }
   }
 
-  if (/["']use client["'];/.test(content) && /process\.env\.(?!NEXT_PUBLIC_)/.test(content)) {
+  if (/["']use client["'];/.test(content) && /process\.env\.(?!NEXT_PUBLIC_|NODE_ENV)/.test(content)) {
     fail(display + ": secreto/variable server-side referenciada desde un componente cliente");
   }
 
