@@ -17,19 +17,6 @@ export const demoDashboard = dashboardSchema.parse({
       evidence: "Fuente primaria",
     },
     {
-      id: "repo-example",
-      kind: "repository",
-      name: "example/agent-memory",
-      description:
-        "Repositorio ficticio usado sólo para visualizar cómo se representará crecimiento, actividad y contexto cuando conectemos GitHub.",
-      url: "https://github.com/",
-      stars: 12400,
-      growth7d: 31,
-      language: "Python",
-      tags: ["agents", "memory", "research"],
-      trend: [18, 24, 31, 38, 51, 70, 86],
-    },
-    {
       id: "stat-sources",
       kind: "stat",
       label: "Fuentes agrupadas",

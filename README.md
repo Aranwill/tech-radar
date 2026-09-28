@@ -10,12 +10,20 @@ Tech Radar es un radar de información tecnológica orientado a señal, trazabil
 - pnpm 11.28.0 fijado como package manager.
 - Tailwind CSS 4 y design tokens propios.
 - PWA mínima con manifest y service worker sin caché persistente todavía.
-- Tema claro, oscuro y sistema.
+- Tema claro y oscuro.
 - Catálogo de UI estructurada inspirado en A2UI: los datos sólo pueden renderizar componentes permitidos.
 - Validación de contratos con Zod.
 - Headers de seguridad y permisos mínimos.
 - CI de typecheck, build y auditoría de dependencias de producción.
 - Dependabot para pnpm/npm ecosystem y GitHub Actions.
+
+## Primer datasource real
+
+GitHub REST API es la primera fuente conectada. La V1 consulta un catálogo pequeño y explícito de repositorios públicos, valida la respuesta server-side y la normaliza al mismo contrato `RepositoryBlock` que usa la UI.
+
+No se calcula momentum real todavía: eso requiere snapshots históricos propios.
+
+Ver [docs/GITHUB_SOURCE_V1.md](docs/GITHUB_SOURCE_V1.md).
 
 ## Desarrollo local
 
@@ -39,6 +47,6 @@ La configuración del proyecto aplica una espera mínima de 24 horas para versio
 
 ## Estado
 
-La interfaz usa datos de demostración. Todavía no hay ingestión real ni conexión a APIs externas.
+La interfaz combina contenido de demostración con el primer datasource real de GitHub. Todavía no hay base de datos ni snapshots históricos.
 
-Ver [docs/FOUNDATION.md](docs/FOUNDATION.md) para alcance, decisiones y próximos pasos.
+Ver [docs/FOUNDATION.md](docs/FOUNDATION.md) para la base del proyecto.

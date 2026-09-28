@@ -17,17 +17,21 @@ const storyBlockSchema = z.object({
   evidence: z.string().min(1).max(80),
 });
 
-const repositoryBlockSchema = z.object({
+export const repositoryBlockSchema = z.object({
   id: z.string().min(1),
   kind: z.literal("repository"),
   name: z.string().min(1).max(100),
   description: z.string().min(1).max(300),
   url: safeUrl,
   stars: z.number().int().nonnegative(),
-  growth7d: z.number(),
+  forks: z.number().int().nonnegative().optional(),
+  openIssues: z.number().int().nonnegative().optional(),
+  growth7d: z.number().optional(),
   language: z.string().min(1).max(40),
   tags: z.array(z.string().min(1).max(30)).max(6),
-  trend: z.array(z.number().min(0).max(100)).min(3).max(30),
+  trend: z.array(z.number().min(0).max(100)).min(3).max(30).optional(),
+  updatedAt: z.string().datetime().optional(),
+  dataState: z.enum(["live", "snapshot"]),
 });
 
 const statBlockSchema = z.object({
@@ -52,4 +56,5 @@ export const dashboardSchema = z.object({
 });
 
 export type UiBlock = z.infer<typeof uiBlockSchema>;
+export type RepositoryBlock = z.infer<typeof repositoryBlockSchema>;
 export type DashboardModel = z.infer<typeof dashboardSchema>;
