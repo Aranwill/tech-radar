@@ -1,5 +1,11 @@
 # Foundation 0.1
 
+## Identidad
+
+El producto se llama **Dalil** (**دليل**). La identidad y su intención se documentan en [BRAND.md](BRAND.md).
+
+El nombre técnico heredado `tech-radar` puede mantenerse temporalmente en repo, rutas o infraestructura hasta evaluar una migración segura; no debe interpretarse como el nombre final de la aplicación.
+
 ## Objetivo
 
 Construir una base pequeña, desplegable y entendible para un radar global de información tecnológica. Esta etapa no intenta resolver ingestión, ranking ni IA: establece la interfaz, los contratos y los límites de seguridad.
