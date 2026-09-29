@@ -11,33 +11,39 @@
   --accent-soft: rgba(0, 87, 255, 0.12);
   --glow: rgba(0, 102, 255, 0.16);
   --shadow: 0 18px 60px rgba(24, 48, 82, 0.09);
+  --wordmark-start: #102033;
+  --wordmark-end: #4a6078;
 }
 
 html[data-theme="dark"] {
-  --bg: #050b14;
-  --surface: rgba(10, 24, 38, 0.82);
-  --surface-strong: #0b1826;
-  --border: rgba(148, 180, 211, 0.15);
+  --bg: #00030a;
+  --surface: rgba(3, 15, 27, 0.9);
+  --surface-strong: #05111c;
+  --border: rgba(100, 154, 196, 0.14);
   --text: #eaf4ff;
   --muted: #91a9bf;
   --accent: #00c8ff;
   --accent-soft: rgba(0, 200, 255, 0.14);
-  --glow: rgba(0, 200, 255, 0.14);
+  --glow: rgba(0, 150, 255, 0.07);
   --shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+  --wordmark-start: #ffffff;
+  --wordmark-end: #cbd3db;
 }
 
 @media (prefers-color-scheme: dark) {
   html:not([data-theme]) {
-    --bg: #050b14;
-    --surface: rgba(10, 24, 38, 0.82);
-    --surface-strong: #0b1826;
-    --border: rgba(148, 180, 211, 0.15);
+    --bg: #00030a;
+    --surface: rgba(3, 15, 27, 0.9);
+    --surface-strong: #05111c;
+    --border: rgba(100, 154, 196, 0.14);
     --text: #eaf4ff;
     --muted: #91a9bf;
     --accent: #00c8ff;
     --accent-soft: rgba(0, 200, 255, 0.14);
-    --glow: rgba(0, 200, 255, 0.14);
+    --glow: rgba(0, 150, 255, 0.07);
     --shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+    --wordmark-start: #ffffff;
+    --wordmark-end: #cbd3db;
   }
 }
 
@@ -95,14 +101,28 @@ a {
   letter-spacing: 0.16em;
 }
 
-.brand-name {
-  color: var(--accent);
-  font-size: clamp(1rem, 1.7vw, 1.35rem);
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  line-height: 1;
-  text-transform: uppercase;
-  text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 34%, transparent);
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.72rem;
+}
+
+.brand-mark {
+  width: 52px;
+  height: 52px;
+  display: block;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 0 16px color-mix(in srgb, var(--accent) 24%, transparent));
+}
+
+.brand-wordmark {
+  width: 118px;
+  height: 24px;
+  display: block;
+  flex: 0 0 auto;
+  background: linear-gradient(180deg, var(--wordmark-start), var(--wordmark-end));
+  -webkit-mask: url("/brand/dalil-wordmark.svg") center / contain no-repeat;
+  mask: url("/brand/dalil-wordmark.svg") center / contain no-repeat;
 }
 
 h1,
@@ -616,6 +636,15 @@ h1 {
   font-size: 0.84rem;
 }
 
+.footer-wordmark {
+  width: 78px;
+  height: 15px;
+  display: block;
+  background: linear-gradient(180deg, var(--wordmark-start), var(--wordmark-end));
+  -webkit-mask: url("/brand/dalil-wordmark.svg") center / contain no-repeat;
+  mask: url("/brand/dalil-wordmark.svg") center / contain no-repeat;
+}
+
 .footer-legal {
   margin-top: 0.2rem;
   font-size: 0.78rem;
@@ -665,7 +694,22 @@ h1 {
     align-items: center;
   }
 
-  .brand-name,
+  .brand-lockup {
+    flex-direction: column;
+    gap: 0.28rem;
+  }
+
+  .brand-mark {
+    width: 66px;
+    height: 64px;
+  }
+
+  .brand-wordmark {
+    width: 112px;
+    height: 21px;
+  }
+
+  .brand-wordmark,
   .topbar h1,
   .lede {
     text-align: center;
@@ -731,6 +775,17 @@ h1 {
 
   .topbar {
     gap: 1rem;
+    padding-top: 1.15rem;
+  }
+
+  .brand-mark {
+    width: 62px;
+    height: 61px;
+  }
+
+  .brand-wordmark {
+    width: 108px;
+    height: 20px;
   }
 
   h1 {

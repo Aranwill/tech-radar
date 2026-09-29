@@ -30,6 +30,34 @@ El tagline visible actual acompaña la identidad Dalil y puede evolucionar con e
 
 ## Identidad visual candidata
 
+### Logo / isotipo
+
+Se adopta como **candidato oficial de identidad** un símbolo basado en una `D` geométrica que integra un radar en su espacio interior.
+
+La lógica visual buscada es:
+
+- la `D` representa directamente **Dalil**;
+- el radar representa descubrimiento, observación y señal;
+- el núcleo luminoso funciona como punto de evidencia/origen;
+- el azul eléctrico/cyan conecta con la paleta actual de la interfaz;
+- la versión de producto debe conservar una variante simplificada para tamaños pequeños.
+
+El asset vectorial candidato vive en `public/brand/dalil-mark.svg`.
+
+Antes de declararlo definitivo se debe validar:
+
+- 16 px / 32 px / 64 px;
+- PWA instalada;
+- favicon;
+- dark/light;
+- contraste;
+- reconocimiento sin wordmark;
+- ausencia de pérdida de detalle en mobile.
+
+La imagen de referencia completa `símbolo + DALIL` se conserva como guía visual; la aplicación no depende de rasterizar esa referencia.
+
+### Paleta y UI
+
 La identidad visual en evaluación usa:
 
 - dark mode con fondo azul-negro profundo;

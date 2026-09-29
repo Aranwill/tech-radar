@@ -10,7 +10,18 @@ export default function Home() {
     <main className="shell">
       <header className="topbar">
         <div className="hero-copy">
-          <div className="brand-name">DALIL</div>
+          <div className="brand-lockup" aria-label="Dalil">
+            <img
+              className="brand-mark"
+              src="/brand/dalil-mark.svg"
+              alt=""
+              width="56"
+              height="56"
+              aria-hidden="true"
+            />
+            <span className="brand-wordmark" aria-hidden="true" />
+            <span className="sr-only">DALIL</span>
+          </div>
           <h1>Inteligencia tecnológica.</h1>
           <p className="lede">
             Noticias, investigación y open source agrupados por historias, con fuente original y contexto visible.
@@ -57,9 +68,10 @@ export default function Home() {
       <LiveGithubRepositories />
 
       <footer className="footer-note">
-        <strong>Dalil</strong>
+        <span className="footer-wordmark" aria-hidden="true" />
+        <span className="sr-only">DALIL</span>
         <span>source-first · datos verificables · mobile-first · PWA</span>
-        <span className="footer-legal">© 2026 Dalil. Todos los derechos reservados.</span>
+        <span className="footer-legal">© 2026 DALIL. Todos los derechos reservados.</span>
         <span className="footer-made">
           Hecho con <span className="footer-heart" role="img" aria-label="amor">❤️</span> por <strong>Aranwill</strong>.
         </span>
