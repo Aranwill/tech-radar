@@ -26,6 +26,7 @@ export const repositoryBlockSchema = z.object({
   stars: z.number().int().nonnegative(),
   forks: z.number().int().nonnegative().optional(),
   openIssuesAndPullRequests: z.number().int().nonnegative().optional(),
+  contributorCount: z.number().int().nonnegative().nullable().optional(),
   growth7d: z.number().optional(),
   language: z.string().min(1).max(40),
   tags: z.array(z.string().min(1).max(30)).max(6),

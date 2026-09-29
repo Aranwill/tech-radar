@@ -81,7 +81,7 @@ export function LiveGithubRepositories() {
       </div>
 
       {state.status === "ready" && state.data.partial && (
-        <p className="source-warning">Al menos un repositorio no respondió; se muestran los datos disponibles.</p>
+        <p className="source-warning">Algunos datos complementarios no pudieron actualizarse; se muestran los datos disponibles.</p>
       )}
     </section>
   );
