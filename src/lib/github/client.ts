@@ -1,4 +1,5 @@
 import { z } from "zod";
+import repositoryConfig from "../../../config/github-repositories.json";
 import { repositoryBlockSchema, type RepositoryBlock } from "@/lib/ui-contract";
 
 const GITHUB_API_VERSION = "2026-03-10";
@@ -7,11 +8,14 @@ const CACHE_SECONDS = 900;
 const REQUEST_TIMEOUT_MS = 8_000;
 const MAX_RESPONSE_BYTES = 1_000_000;
 
-const curatedRepositories = [
-  "a2ui-project/a2ui",
-  "modelcontextprotocol/ext-apps",
-  "huggingface/transformers",
-] as const;
+const curatedRepositoryConfigSchema = z.object({
+  version: z.literal(1),
+  repositories: z.array(
+    z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/),
+  ).min(1).max(50),
+});
+
+const curatedRepositories = curatedRepositoryConfigSchema.parse(repositoryConfig).repositories;
 
 const githubWebUrlSchema = z.string().url().refine((value) => {
   const url = new URL(value);
@@ -93,7 +97,7 @@ function getLastPageFromLinkHeader(linkHeader: string | null) {
   return null;
 }
 
-async function fetchContributorCount(repository: (typeof curatedRepositories)[number]) {
+async function fetchContributorCount(repository: string) {
   try {
     const response = await fetch(
       GITHUB_API_ORIGIN + "/repos/" + repository + "/contributors?per_page=1&anon=false",
@@ -121,7 +125,7 @@ async function fetchContributorCount(repository: (typeof curatedRepositories)[nu
   }
 }
 
-async function fetchTopContributors(repository: (typeof curatedRepositories)[number]) {
+async function fetchTopContributors(repository: string) {
   try {
     const response = await fetch(
       GITHUB_API_ORIGIN + "/repos/" + repository + "/contributors?per_page=8&anon=false",
@@ -153,7 +157,7 @@ async function fetchTopContributors(repository: (typeof curatedRepositories)[num
   }
 }
 
-async function fetchRepository(repository: (typeof curatedRepositories)[number]): Promise<RepositoryBlock> {
+async function fetchRepository(repository: string): Promise<RepositoryBlock> {
   const [response, contributorCount, contributors] = await Promise.all([
     fetch(GITHUB_API_ORIGIN + "/repos/" + repository, {
       headers: githubHeaders(),

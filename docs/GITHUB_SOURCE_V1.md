@@ -49,7 +49,11 @@ El datasource usa caché de 15 minutos. No utilizamos todavía endpoints de bús
 
 Esta versión no muestra crecimiento 7d/30d para datos reales porque aún no existe histórico propio. Inventar crecimiento a partir del valor actual violaría la trazabilidad del proyecto.
 
-La siguiente etapa será persistir snapshots y derivar momentum de nuestras propias observaciones.
+La etapa GitHub Snapshots V1 ya implementa el contrato de persistencia y un collector remoto idempotente por buckets UTC de 6h. La persistencia real permanece deshabilitada hasta conectar y validar una base D1.
+
+No se mostrará crecimiento 24h/7d/30d hasta acumular baselines temporales suficientes.
+
+Ver `docs/GITHUB_SNAPSHOTS_V1.md`.
 
 
 ## Semántica de issues

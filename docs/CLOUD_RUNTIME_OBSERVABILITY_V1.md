@@ -427,19 +427,19 @@ Controles previstos:
 
 ### Fase B — Persistencia
 
-- schema D1;
-- migraciones reproducibles;
-- repositorios/snapshots;
-- adapter de persistence;
-- backup/export verificable.
+- schema D1: **versionado**;
+- migraciones reproducibles: **validadas localmente**;
+- repositorios/snapshots: **contrato de escritura implementado**;
+- adapter de persistence: **colector administrativo D1 V1 implementado, activación remota pendiente**;
+- backup/export verificable: pendiente.
 
 ### Fase C — Pipeline remoto
 
-- workflow de GitHub Actions;
-- scheduler;
-- collector GitHub existente ejecutado fuera del request path;
-- idempotencia;
-- métricas de ejecución.
+- workflow de GitHub Actions: **implementado**;
+- scheduler: **definido cada 6h y deshabilitado por variable hasta validar D1 real**;
+- collector GitHub fuera del request path: **implementado**;
+- idempotencia: **validada por bucket UTC de 6h**;
+- métricas de ejecución: `ingestion_runs` + resumen de job implementados.
 
 ### Fase D — Observabilidad
 

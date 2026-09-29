@@ -1,0 +1,57 @@
+name: GitHub repository snapshots
+
+on:
+  workflow_dispatch:
+    inputs:
+      persist:
+        description: Persistir el snapshot en D1
+        required: true
+        type: boolean
+        default: false
+  schedule:
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-repository-snapshots
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    if: github.event_name == 'workflow_dispatch' || vars.DALIL_SNAPSHOTS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+      CLOUDFLARE_D1_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+      PERSIST_SNAPSHOT: ${{ github.event_name == 'schedule' || inputs.persist == true }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 24
+
+      - name: Validate snapshot persistence contract
+        run: node scripts/validate-github-snapshot-pipeline.mjs
+
+      - name: Collect GitHub snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "$PERSIST_SNAPSHOT" == "true" ]]; then
+            node scripts/github-snapshot.mjs --persist
+          else
+            node scripts/github-snapshot.mjs --manual
+          fi

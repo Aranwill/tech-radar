@@ -44,6 +44,9 @@ jobs:
       - name: Validate D1 schema
         run: pnpm schema:validate
 
+      - name: Validate GitHub snapshot pipeline
+        run: pnpm snapshot:validate
+
       - name: Typecheck
         run: pnpm typecheck
 
