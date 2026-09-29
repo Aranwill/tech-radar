@@ -22,9 +22,9 @@ Dalil no pretende reemplazar la fuente ni presentar una “verdad automática”
 
 ## Tagline
 
-**Señal tecnológica, sin ruido.**
+**Inteligencia tecnológica.**
 
-El tagline puede evolucionar durante el refinamiento visual, pero la idea de producto permanece:
+El tagline visible actual acompaña la identidad Dalil y puede evolucionar con evidencia de uso, pero la idea de producto permanece:
 
 > descubrir señal útil, conservar trazabilidad y facilitar el acceso a la evidencia original.
 

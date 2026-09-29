@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <main className="shell">
       <header className="topbar">
-        <div>
+        <div className="hero-copy">
           <div className="brand-name">DALIL</div>
           <h1>Inteligencia tecnológica.</h1>
           <p className="lede">
@@ -19,7 +19,7 @@ export default function Home() {
         <ThemeToggle />
       </header>
 
-      <section className="context-grid" aria-label="Contexto del radar">
+      <section className="context-grid" aria-label="Contexto de Dalil">
         <article className="context-card">
           <span className="context-label">Ubicación</span>
           <strong>Sin configurar</strong>
@@ -59,6 +59,10 @@ export default function Home() {
       <footer className="footer-note">
         <strong>Dalil</strong>
         <span>source-first · datos verificables · mobile-first · PWA</span>
+        <span className="footer-legal">© 2026 Dalil. Todos los derechos reservados.</span>
+        <span className="footer-made">
+          Hecho con <span className="footer-heart" role="img" aria-label="amor">❤️</span> por <strong>Aranwill</strong>.
+        </span>
       </footer>
     </main>
   );

@@ -14,7 +14,7 @@ El repositorio conserva por ahora el nombre técnico `tech-radar`. Un eventual r
 - **Árabe:** دليل
 - **Transliteración:** Dalīl / Dalil
 - **Sentido adoptado por el proyecto:** guía, indicio/evidencia y orientación entre señales.
-- **Tagline actual:** Señal tecnológica, sin ruido.
+- **Tagline actual:** Inteligencia tecnológica.
 
 La elección encaja con los principios del producto: descubrir información relevante, mostrar procedencia, aportar contexto y permitir que el usuario llegue a la fuente original.
 
