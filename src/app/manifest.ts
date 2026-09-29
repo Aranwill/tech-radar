@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Dalil · Inteligencia tecnológica con fuentes trazables.",
     start_url: "/",
     display: "standalone",
-    background_color: "#050b14",
-    theme_color: "#050b14",
+    background_color: "#01081a",
+    theme_color: "#01081a",
     icons: [
       {
         src: "/icon.svg",

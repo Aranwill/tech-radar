@@ -13,7 +13,7 @@ export default function Home() {
           <div className="brand-lockup" aria-label="Dalil">
             <img
               className="brand-mark"
-              src="/brand/dalil-mark-transparent.svg"
+              src="/brand/dalil-mark.svg"
               alt=""
               width="56"
               height="56"

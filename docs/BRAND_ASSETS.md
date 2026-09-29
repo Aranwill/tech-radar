@@ -18,12 +18,12 @@ Tagline:
 
 ## Isotipo
 
-Assets canónicos candidatos:
+Assets canónicos proporcionados por el propietario:
 
-- `public/brand/dalil-mark.svg`
-- `public/brand/dalil-mark-transparent.svg`
-- `public/brand/dalil-wordmark-mask.svg`
-- `public/brand/dalil-wordmark-reference.svg`
+- `public/brand/dalil-mark.svg` — SVG exacto del isotipo;
+- `public/brand/dalil-wordmark.svg` — SVG exacto del wordmark DALIL.
+
+No se mantienen reinterpretaciones geométricas alternativas como fuente de producción.
 
 Concepto:
 
@@ -41,7 +41,7 @@ El isotipo evita texto embebido para seguir siendo reutilizable en:
 
 ## Principios
 
-La imagen de referencia elegida por el propietario es la autoridad visual del sistema completo. La vectorización se traza sobre esa referencia para conservar tanto la silueta del isotipo como el wordmark DALIL —incluida la A triangular— y no debe reinterpretarse con tipografías genéricas.
+Los SVG entregados por el propietario son la autoridad visual y los assets canónicos. No deben redibujarse ni reinterpretarse salvo una modificación explícitamente aprobada.
 
 1. Debe reconocerse como `D` antes que como ilustración decorativa.
 2. Debe preservar la D exterior curva, el pilar izquierdo separado y el swoosh inferior de la referencia.
@@ -55,13 +55,11 @@ La imagen de referencia elegida por el propietario es la autoridad visual del si
 
 En esta rama:
 
-- `public/icon.svg` usa el isotipo con fondo oscuro para favicon/PWA;
-- `src/app/icon.svg` usa el mismo vector;
-- `public/brand/dalil-mark-transparent.svg` ofrece el isotipo sin fondo para la UI;
-- `public/brand/dalil-wordmark-mask.svg` conserva la geometría exacta del wordmark y permite color adaptativo dark/light;
-- `public/brand/dalil-wordmark-reference.svg` conserva la versión plateada de referencia;
+- `public/icon.svg` y `src/app/icon.svg` reutilizan el isotipo SVG exacto;
+- el hero usa `public/brand/dalil-mark.svg` directamente;
+- el wordmark usa `public/brand/dalil-wordmark.svg` como máscara exacta para conservar geometría y adaptar contraste entre dark/light;
 - manifest y metadata siguen apuntando a `/icon.svg`;
-- el hero integra el isotipo trazado y el wordmark trazado; ya no usa texto genérico para DALIL.
+- dark mode adopta `#01081A`, muestreado del fondo de la referencia del logo, con superficies azuladas compatibles.
 
 Composición responsive:
 
