@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "repositories": [
+    "a2ui-project/a2ui",
+    "modelcontextprotocol/ext-apps",
+    "huggingface/transformers"
+  ]
+}

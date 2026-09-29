@@ -37,9 +37,11 @@ Ver [docs/PRODUCT_IDENTITY.md](docs/PRODUCT_IDENTITY.md).
 
 GitHub REST API es la primera fuente conectada. La V1 consulta un catálogo pequeño y explícito de repositorios públicos, valida la respuesta server-side y la normaliza al mismo contrato `RepositoryBlock` que usa la UI.
 
-No se calcula momentum real todavía: eso requiere snapshots históricos propios.
+No se calcula momentum real todavía: primero debemos acumular snapshots históricos propios.
 
-Ver [docs/GITHUB_SOURCE_V1.md](docs/GITHUB_SOURCE_V1.md).
+El colector GitHub Snapshots V1 ya define dry-run, persistencia D1 idempotente por ventanas de 6h y workflow remoto protegido por configuración explícita.
+
+Ver [docs/GITHUB_SOURCE_V1.md](docs/GITHUB_SOURCE_V1.md) y [docs/GITHUB_SNAPSHOTS_V1.md](docs/GITHUB_SNAPSHOTS_V1.md).
 
 ## Infraestructura remota V1
 
@@ -71,6 +73,6 @@ La configuración del proyecto aplica una espera mínima de 24 horas para versio
 
 ## Estado
 
-La interfaz combina contenido de demostración con el primer datasource real de GitHub. Todavía no hay base de datos ni snapshots históricos.
+La interfaz combina contenido de demostración con el primer datasource real de GitHub. El schema D1 y el pipeline de snapshots están versionados; la persistencia remota sigue deshabilitada hasta configurar y validar una base D1 real.
 
 Ver [docs/FOUNDATION.md](docs/FOUNDATION.md) para la base del proyecto.

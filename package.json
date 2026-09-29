@@ -15,7 +15,9 @@
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
     "schema:validate": "node scripts/validate-d1-schema.mjs",
-    "security:baseline": "node scripts/security-baseline.mjs"
+    "security:baseline": "node scripts/security-baseline.mjs",
+    "snapshot:github": "node scripts/github-snapshot.mjs",
+    "snapshot:validate": "node scripts/validate-github-snapshot-pipeline.mjs"
   },
   "dependencies": {
     "next": "16.3.6",
