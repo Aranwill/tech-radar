@@ -41,6 +41,14 @@ No se calcula momentum real todavía: eso requiere snapshots históricos propios
 
 Ver [docs/GITHUB_SOURCE_V1.md](docs/GITHUB_SOURCE_V1.md).
 
+## Infraestructura remota V1
+
+La baseline propuesta mantiene Dalil disponible sin depender de una PC personal: Cloudflare para frontend/API/persistencia/telemetría y GitHub Actions para scheduler + procesamiento remoto.
+
+También se define una observabilidad geográfica privacy-first: actividad agregada por país, requests/respuestas, errores y latencia, sin almacenar IP ni fingerprinting.
+
+Ver [docs/CLOUD_RUNTIME_OBSERVABILITY_V1.md](docs/CLOUD_RUNTIME_OBSERVABILITY_V1.md).
+
 ## Desarrollo local
 
 Requiere Node.js 20.19 o superior y pnpm 11.28.0.
