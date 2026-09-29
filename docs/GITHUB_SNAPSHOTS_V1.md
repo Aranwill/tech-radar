@@ -139,6 +139,12 @@ Es deliberadamente pequeño. La expansión del catálogo deberá revisar cuotas,
 - Actions fijadas a SHA inmutable;
 - persistencia deshabilitada hasta configuración explícita.
 
+## History V1
+
+La derivación temporal ya tiene contrato separado en `docs/GITHUB_HISTORY_V1.md`.
+
+Una ventana 24h/7d/30d sólo se considera disponible si existe su bucket exacto. No se interpola ni se sustituye por el snapshot cercano.
+
 ## Siguiente etapa
 
 Cuando exista histórico suficiente:
