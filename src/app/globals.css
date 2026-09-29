@@ -186,8 +186,7 @@ h1 {
 .context-card,
 .card {
   border: 1px solid var(--border);
-  background: var(--surface);
-  backdrop-filter: blur(18px);
+  background: var(--surface-strong);
   box-shadow: var(--shadow);
 }
 
