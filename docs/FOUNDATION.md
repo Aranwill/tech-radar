@@ -38,11 +38,16 @@ El cambio a pnpm no elimina el riesgo del registry npm: la defensa depende tambi
 - GitHub Emerging / Popular / New & Interesting con snapshots propios.
 - Clima como contexto, nunca como vertical.
 - Gráficos y estadísticas sólo cuando aporten información.
+- Observabilidad geográfica agregada por país, sin IP ni fingerprinting, cuando existan métricas reales de producción.
 
 ## Arquitectura inicial
 
 ```text
 fuentes externas
+     |
+     v
+GitHub Actions
+scheduler + processing
      |
      v
 ingestión / normalización
@@ -51,13 +56,15 @@ ingestión / normalización
 deduplicación + stories
      |
      v
-ranking + snapshots
+ranking + snapshots + evidence
+     |
+     +--------> Cloudflare R2
      |
      v
-PostgreSQL
+Cloudflare D1
      |
      v
-API propia
+Cloudflare Worker / API propia
      |
      v
 contrato UI estructurado
@@ -66,10 +73,14 @@ contrato UI estructurado
 catálogo React permitido
      |
      v
-PWA
+PWA / Static Assets
 ```
 
-La Foundation implementa desde `contrato UI estructurado` hacia abajo usando datos de demostración.
+La Foundation implementa hoy desde `contrato UI estructurado` hacia abajo y ya dispone de GitHub como primer datasource real. La evolución de V1 adopta Cloudflare + GitHub Actions como baseline de infraestructura remota para que disponibilidad, persistencia e ingestión no dependan de un dispositivo del usuario.
+
+Los contratos de dominio deben permanecer desacoplados de los SDKs del proveedor para conservar una vía de migración futura.
+
+Ver [CLOUD_RUNTIME_OBSERVABILITY_V1.md](CLOUD_RUNTIME_OBSERVABILITY_V1.md).
 
 ## A2UI / MCP Apps
 
@@ -79,7 +90,18 @@ MCP Apps queda fuera del camino crítico. Podrá explorarse más adelante para e
 
 ## Hosting
 
-La decisión final de proveedor se mantiene abierta. El diseño debe poder ejecutarse en servicios gratuitos durante la etapa inicial y evitar dependencias innecesarias de proveedor.
+La baseline V1 selecciona:
+
+- Cloudflare Static Assets para frontend;
+- Cloudflare Workers para API/runtime HTTP acotado;
+- Cloudflare D1 como persistencia relacional inicial;
+- Cloudflare R2 para object storage cuando sea necesario;
+- Workers Analytics Engine para telemetría operativa agregada;
+- GitHub Actions para scheduler y procesamiento remoto.
+
+La selección se adopta para comenzar dentro de free tiers y mantener Dalil independiente de una PC personal. Los límites gratuitos son restricciones operativas que deben revalidarse antes de cada ampliación relevante.
+
+No se habilitará gasto automático para ocultar un exceso de cuota.
 
 ## Seguridad
 
