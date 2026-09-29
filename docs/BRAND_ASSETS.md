@@ -49,15 +49,28 @@ El isotipo evita texto embebido para seguir siendo reutilizable en:
 
 En esta rama:
 
-- `public/icon.svg` usa el nuevo isotipo;
+- `public/icon.svg` usa el isotipo con fondo oscuro para favicon/PWA;
 - `src/app/icon.svg` usa el mismo vector;
-- manifest y metadata siguen apuntando a `/icon.svg`.
+- `public/brand/dalil-mark-transparent.svg` ofrece el isotipo sin fondo para la UI;
+- manifest y metadata siguen apuntando a `/icon.svg`;
+- el hero integra el isotipo real con el wordmark `DALIL`.
 
-No se cambia todavía el wordmark visible del hero. La UI conserva:
+Composición responsive:
 
-`DALIL`
+```text
+desktop:
+[D-radar] DALIL
+Inteligencia tecnológica.
 
-`Inteligencia tecnológica.`
+mobile:
+[D-radar]
+  DALIL
+Inteligencia tecnológica.
+```
+
+El selector de tema conserva su posición independiente arriba a la derecha en responsive.
+
+La UI no incorpora navegación ficticia del mockup: sólo se aplican componentes de identidad que ya tienen función real.
 
 ## Criterios de aceptación
 

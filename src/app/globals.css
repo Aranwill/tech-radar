@@ -95,6 +95,20 @@ a {
   letter-spacing: 0.16em;
 }
 
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.72rem;
+}
+
+.brand-mark {
+  width: 52px;
+  height: 52px;
+  display: block;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 0 16px color-mix(in srgb, var(--accent) 24%, transparent));
+}
+
 .brand-name {
   color: var(--accent);
   font-size: clamp(1rem, 1.7vw, 1.35rem);
@@ -665,6 +679,16 @@ h1 {
     align-items: center;
   }
 
+  .brand-lockup {
+    flex-direction: column;
+    gap: 0.28rem;
+  }
+
+  .brand-mark {
+    width: 58px;
+    height: 58px;
+  }
+
   .brand-name,
   .topbar h1,
   .lede {
@@ -731,6 +755,12 @@ h1 {
 
   .topbar {
     gap: 1rem;
+    padding-top: 1.15rem;
+  }
+
+  .brand-mark {
+    width: 54px;
+    height: 54px;
   }
 
   h1 {

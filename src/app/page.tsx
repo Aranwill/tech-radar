@@ -10,7 +10,17 @@ export default function Home() {
     <main className="shell">
       <header className="topbar">
         <div className="hero-copy">
-          <div className="brand-name">DALIL</div>
+          <div className="brand-lockup" aria-label="Dalil">
+            <img
+              className="brand-mark"
+              src="/brand/dalil-mark-transparent.svg"
+              alt=""
+              width="56"
+              height="56"
+              aria-hidden="true"
+            />
+            <div className="brand-name">DALIL</div>
+          </div>
           <h1>Inteligencia tecnológica.</h1>
           <p className="lede">
             Noticias, investigación y open source agrupados por historias, con fuente original y contexto visible.
