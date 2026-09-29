@@ -1,22 +1,6 @@
 import type { RepositoryBlock } from "@/lib/ui-contract";
 
-type MetricIconName = "star" | "fork" | "calendar" | "issue" | "history" | "users";
-
-const languageColors: Record<string, string> = {
-  TypeScript: "#3178c6",
-  JavaScript: "#f1e05a",
-  Python: "#3572A5",
-  Rust: "#dea584",
-  Go: "#00ADD8",
-  Java: "#b07219",
-  "C#": "#178600",
-  "C++": "#f34b7d",
-  C: "#555555",
-  Ruby: "#701516",
-  PHP: "#4F5D95",
-  Swift: "#F05138",
-  Kotlin: "#A97BFF",
-};
+type MetricIconName = "star" | "fork" | "code" | "calendar" | "issue" | "history" | "users";
 
 function MetricIcon({ name }: { name: MetricIconName }) {
   const common = {
@@ -44,6 +28,12 @@ function MetricIcon({ name }: { name: MetricIconName }) {
           <circle cx="18" cy="5" r="2" />
           <circle cx="12" cy="19" r="2" />
           <path d="M6 7v2a4 4 0 0 0 4 4h2m6-6v2a4 4 0 0 1-4 4h-2v4" />
+        </svg>
+      );
+    case "code":
+      return (
+        <svg {...common}>
+          <path d="m8 9-3 3 3 3M16 9l3 3-3 3M14 5l-4 14" />
         </svg>
       );
     case "calendar":
@@ -91,6 +81,10 @@ function formatUpdatedAt(value?: string) {
   }).format(new Date(value));
 }
 
+function formatContributorCount(value: number) {
+  return value > 999 ? "999+" : value.toLocaleString("es-AR");
+}
+
 export function RepositoryCard({
   block,
   className = "card-repository",
@@ -101,8 +95,6 @@ export function RepositoryCard({
   const isLive = block.dataState === "live";
   const updatedAt = formatUpdatedAt(block.updatedAt);
   const hasTags = block.tags.length > 0;
-  const contributors = block.contributors ?? [];
-  const languageColor = languageColors[block.language] ?? "var(--muted)";
 
   return (
     <article className={`card repository-card ${className}`}>
@@ -122,7 +114,7 @@ export function RepositoryCard({
               <MetricIcon name="star" />
               {block.stars.toLocaleString("es-AR")}
             </strong>
-            <span>estrellas</span>
+            <span className="metric-label">estrellas</span>
           </div>
           <div className="metric">
             <strong className="metric-value-line">
@@ -131,18 +123,14 @@ export function RepositoryCard({
                 ? `+${block.growth7d}%`
                 : (block.forks ?? 0).toLocaleString("es-AR")}
             </strong>
-            <span>{typeof block.growth7d === "number" ? "7 días" : "forks"}</span>
+            <span className="metric-label">{typeof block.growth7d === "number" ? "7 días" : "forks"}</span>
           </div>
           <div className="metric">
             <strong className="metric-value-line">
-              <span
-                className="language-dot"
-                style={{ backgroundColor: languageColor }}
-                aria-hidden="true"
-              />
+              <MetricIcon name="code" />
               {block.language}
             </strong>
-            <span>lenguaje</span>
+            <span className="metric-label">lenguaje</span>
           </div>
         </div>
 
@@ -160,7 +148,7 @@ export function RepositoryCard({
             </span>
             <span className="status-item">
               <MetricIcon name="issue" />
-              {(block.openIssuesAndPullRequests ?? 0).toLocaleString("es-AR")} issues/PR abiertas
+              {(block.openIssuesAndPullRequests ?? 0).toLocaleString("es-AR")} issues/PR
             </span>
             <span className="status-item">
               <MetricIcon name="history" />
@@ -181,38 +169,16 @@ export function RepositoryCard({
           )}
         </div>
 
-        {contributors.length > 0 && (
-          <div className="contributors-block">
-            <div className="contributors-heading">
-              <span className="contributors-label">
-                <MetricIcon name="users" />
-                Contribuidores destacados
-              </span>
-              <span className="contributors-note">top {contributors.length}</span>
-            </div>
-            <div className="contributors-list">
-              {contributors.map((contributor) => (
-                <a
-                  className="contributor"
-                  href={contributor.profileUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  key={contributor.login}
-                  aria-label={`Abrir perfil de ${contributor.login}, ${contributor.contributions.toLocaleString("es-AR")} contribuciones`}
-                  title={`${contributor.login} · ${contributor.contributions.toLocaleString("es-AR")} contribuciones`}
-                >
-                  <img
-                    src={contributor.avatarUrl}
-                    alt=""
-                    width="34"
-                    height="34"
-                    loading="lazy"
-                    decoding="async"
-                    referrerPolicy="no-referrer"
-                  />
-                </a>
-              ))}
-            </div>
+        {typeof block.contributorCount === "number" && (
+          <div
+            className="community-row"
+            title={`${block.contributorCount.toLocaleString("es-AR")} contribuidores públicos observados`}
+          >
+            <span className="community-label">
+              <MetricIcon name="users" />
+              Contribuidores
+            </span>
+            <strong>{formatContributorCount(block.contributorCount)}</strong>
           </div>
         )}
       </div>

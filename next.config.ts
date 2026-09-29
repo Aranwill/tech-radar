@@ -9,7 +9,7 @@ const contentSecurityPolicy = [
   "frame-ancestors 'none'",
   "frame-src 'none'",
   "form-action 'self'",
-  "img-src 'self' data: blob: https://avatars.githubusercontent.com",
+  "img-src 'self' data: blob:",
   "font-src 'self' data:",
   "media-src 'self'",
   "style-src 'self' 'unsafe-inline'",
