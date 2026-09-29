@@ -1,8 +1,24 @@
-# Tech Radar
+# Dalil
 
-> Nombre provisional. Proyecto independiente.
+> دليل · Dalīl · guía / indicio / evidencia
 
-Tech Radar es un radar de información tecnológica orientado a señal, trazabilidad y descubrimiento. La V1 prioriza una experiencia PWA responsive, fuentes originales, visualización estructurada y una base segura para incorporar noticias, papers, repositorios, Hugging Face y ciberseguridad.
+**Dalil** es el nombre elegido para el proyecto anteriormente identificado como `Tech Radar`.
+
+Dalil es un radar de información tecnológica orientado a señal, trazabilidad y descubrimiento. La V1 prioriza una experiencia PWA responsive, fuentes originales, visualización estructurada y una base segura para incorporar noticias, papers, repositorios, Hugging Face y ciberseguridad.
+
+El repositorio conserva por ahora el nombre técnico `tech-radar`. Un eventual rename del repositorio o del paquete se tratará como un cambio separado para no mezclar identidad de producto con migraciones técnicas.
+
+## Identidad de producto
+
+- **Nombre:** Dalil
+- **Árabe:** دليل
+- **Transliteración:** Dalīl / Dalil
+- **Sentido adoptado por el proyecto:** guía, indicio/evidencia y orientación entre señales.
+- **Tagline actual:** Señal tecnológica, sin ruido.
+
+La elección encaja con los principios del producto: descubrir información relevante, mostrar procedencia, aportar contexto y permitir que el usuario llegue a la fuente original.
+
+Ver [docs/PRODUCT_IDENTITY.md](docs/PRODUCT_IDENTITY.md).
 
 ## Foundation
 
