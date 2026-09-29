@@ -10,7 +10,7 @@ export default function Home() {
     <main className="shell">
       <header className="topbar">
         <div>
-          <div className="eyebrow">CODENAME · TECH RADAR</div>
+          <div className="eyebrow">DALIL · دليل</div>
           <h1>Señal tecnológica, sin ruido.</h1>
           <p className="lede">
             Noticias, investigación y open source agrupados por historias, con fuente original y contexto visible.
@@ -57,7 +57,7 @@ export default function Home() {
       <LiveGithubRepositories />
 
       <footer className="footer-note">
-        <strong>Tech Radar</strong>
+        <strong>Dalil</strong>
         <span>source-first · datos verificables · mobile-first · PWA</span>
       </footer>
     </main>

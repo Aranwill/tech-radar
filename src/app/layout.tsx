@@ -5,11 +5,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Tech Radar",
-    template: "%s · Tech Radar",
+    default: "Dalil",
+    template: "%s · Dalil",
   },
   description: "Radar de inteligencia tecnológica con fuentes trazables.",
-  applicationName: "Tech Radar",
+  applicationName: "Dalil",
   icons: {
     icon: "/icon.svg",
   },
