@@ -65,7 +65,7 @@ Con `per_page=1`, el número de la última página informado por GitHub permite 
 
 - La UI muestra el valor exacto hasta 999 y `999+` a partir de ese punto para mantener la card compacta.
 - El valor completo permanece disponible como contexto accesible en la interfaz.
-- Si GitHub no puede resolver el endpoint de contribuidores, la card sigue disponible sin bloquear el repositorio.
+- Si GitHub no puede resolver el endpoint de contribuidores, la API devuelve `contributorCount: null`, la card muestra `—` y el payload se marca como parcial.
 - No se cargan avatares ni imágenes externas.
 - La misma caché de 15 minutos limita llamadas adicionales.
 

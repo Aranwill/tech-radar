@@ -81,7 +81,11 @@ function formatUpdatedAt(value?: string) {
   }).format(new Date(value));
 }
 
-function formatContributorCount(value: number) {
+function formatContributorCount(value: number | null | undefined) {
+  if (typeof value !== "number") {
+    return "—";
+  }
+
   return value > 999 ? "999+" : value.toLocaleString("es-AR");
 }
 
@@ -169,18 +173,20 @@ export function RepositoryCard({
           )}
         </div>
 
-        {typeof block.contributorCount === "number" && (
-          <div
-            className="community-row"
-            title={`${block.contributorCount.toLocaleString("es-AR")} contribuidores públicos observados`}
-          >
-            <span className="community-label">
-              <MetricIcon name="users" />
-              Contribuidores
-            </span>
-            <strong>{formatContributorCount(block.contributorCount)}</strong>
-          </div>
-        )}
+        <div
+          className="community-row"
+          title={
+            typeof block.contributorCount === "number"
+              ? `${block.contributorCount.toLocaleString("es-AR")} contribuidores públicos observados`
+              : "Conteo de contribuidores no disponible en esta actualización"
+          }
+        >
+          <span className="community-label">
+            <MetricIcon name="users" />
+            Contribuidores
+          </span>
+          <strong>{formatContributorCount(block.contributorCount)}</strong>
+        </div>
       </div>
 
       <div className="card-footer">

@@ -116,9 +116,12 @@ async function fetchContributorCount(repository: (typeof curatedRepositories)[nu
     }
 
     return getLastPageFromLinkHeader(response.headers.get("link")) ?? 1;
-  } catch {
-    console.warn("[github-source] contributor_count_unavailable", { repository });
-    return undefined;
+  } catch (error) {
+    console.warn("[github-source] contributor_count_unavailable", {
+      repository,
+      reason: error instanceof Error ? error.message : "unknown_error",
+    });
+    return null;
   }
 }
 
@@ -172,8 +175,12 @@ export async function getCuratedGithubRepositories() {
     throw new Error("No fue posible obtener ningún repositorio curado.");
   }
 
+  const enrichmentIncomplete = repositories.some(
+    (repository) => repository.contributorCount === null,
+  );
+
   return {
     repositories,
-    partial: failed > 0,
+    partial: failed > 0 || enrichmentIncomplete,
   };
 }
