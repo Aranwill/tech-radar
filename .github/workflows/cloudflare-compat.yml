@@ -1,0 +1,69 @@
+name: Cloudflare compatibility preflight
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/cloudflare-compat.yml"
+      - "docs/CLOUDFLARE_COMPATIBILITY_PREFLIGHT.md"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "next.config.ts"
+      - "tsconfig.json"
+      - "postcss.config.mjs"
+      - "src/**"
+      - "public/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-compat-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  vinext-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+        with:
+          version: 11.28.0
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 24
+
+      - name: Install project dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run vinext compatibility check
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          pnpm dlx vinext@1.0.0-beta.9 check 2>&1 | tee vinext-check.txt
+
+          {
+            printf '%s\n' '## Cloudflare / vinext compatibility preflight'
+            printf '\n'
+            printf '%s\n' '`vinext check` pinned to 1.0.0-beta.9 for this evidence run.'
+            printf '\n'
+            printf '%s\n' '```text'
+            cat vinext-check.txt
+            printf '%s\n' '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if grep -q "✗" vinext-check.txt; then
+            echo "::error::vinext check reported one or more compatibility issues."
+            exit 1
+          fi
