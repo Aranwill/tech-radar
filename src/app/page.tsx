@@ -11,7 +11,7 @@ export default function Home() {
       <header className="topbar">
         <div>
           <div className="brand-name">DALIL</div>
-          <h1>Señal tecnológica, sin ruido.</h1>
+          <h1>Inteligencia tecnológica.</h1>
           <p className="lede">
             Noticias, investigación y open source agrupados por historias, con fuente original y contexto visible.
           </p>
