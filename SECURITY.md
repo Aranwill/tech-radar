@@ -37,6 +37,23 @@ Ver docs/security/OWASP_BASELINE.md y docs/security/THREAT_MODEL.md.
 - Errores externos se degradan de forma segura sin exponer stack traces, tokens ni respuestas internas.
 - Logs sin credenciales, tokens ni contenido sensible.
 
+## Tráfico del navegador y extensiones
+
+Dalil no incorpora actualmente analytics, trackers ni scripts de telemetría de terceros en el cliente.
+
+La política CSP limita `connect-src` a orígenes declarados por la aplicación. Las consultas a GitHub se realizan server-side y no requieren habilitar `api.github.com` en la CSP del navegador.
+
+Durante el desarrollo, extensiones del navegador, antivirus y software de protección local pueden inyectar scripts o generar XHR propios que aparecen en DevTools como si convivieran con la página. Ese tráfico pertenece al entorno local del navegador y está fuera del trust boundary de Dalil.
+
+Para atribuir una solicitud observada en DevTools:
+
+- revisar el dominio destino y el iniciador de la request;
+- reproducir en un perfil limpio con extensiones deshabilitadas;
+- no agregar dominios de extensiones/antivirus a la allowlist de Dalil sólo para silenciar esas requests;
+- no clasificar una request como tráfico de Dalil si su iniciador no pertenece al bundle/aplicación y su destino no forma parte de los orígenes declarados.
+
+La presencia de tráfico inyectado por una extensión no debe confundirse con una dependencia, tracker o telemetría de Dalil.
+
 ## IA / agentes
 
 Mientras no exista una feature de IA, no hay un modelo dentro del trust boundary de producción.
