@@ -652,9 +652,11 @@ h1 {
 
 @media (max-width: 820px) {
   .topbar {
+    position: relative;
     flex-direction: column;
     align-items: center;
     text-align: center;
+    padding-top: 1.35rem;
   }
 
   .hero-copy {
@@ -675,7 +677,21 @@ h1 {
   }
 
   .theme-control {
-    margin-inline: auto;
+    position: absolute;
+    top: 0.15rem;
+    right: 0;
+    margin: 0;
+    gap: 0.15rem;
+    padding: 0.2rem;
+  }
+
+  .theme-control button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .theme-icon {
+    font-size: 0.9rem;
   }
 
   .context-grid {
@@ -723,7 +739,8 @@ h1 {
   }
 
   .theme-control {
-    margin-inline: auto;
+    top: 0.05rem;
+    right: 0;
   }
 
   .category-strip {
