@@ -49,19 +49,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          {
-            echo "## Cloudflare / vinext compatibility preflight"
-            echo
-            echo "`vinext check` pinned to 1.0.0-beta.9 for this evidence run."
-            echo
-            echo "```text"
-          } >> "$GITHUB_STEP_SUMMARY"
 
           pnpm dlx vinext@1.0.0-beta.9 check 2>&1 | tee vinext-check.txt
 
           {
+            printf '%s\n' '## Cloudflare / vinext compatibility preflight'
+            printf '\n'
+            printf '%s\n' '`vinext check` pinned to 1.0.0-beta.9 for this evidence run.'
+            printf '\n'
+            printf '%s\n' '```text'
             cat vinext-check.txt
-            echo "```"
+            printf '%s\n' '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
           if grep -q "✗" vinext-check.txt; then
