@@ -2,6 +2,7 @@
   "name": "tech-radar",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Radar de inteligencia tecnológica con fuentes trazables y UI estructurada.",
   "packageManager": "pnpm@11.28.0",
   "engines": {
