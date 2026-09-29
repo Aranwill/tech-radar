@@ -38,6 +38,21 @@ Hallazgos:
 2. **Soporte parcial:** `reactStrictMode` no envuelve todavía el App Router como lo hace Next.js; no bloquea el build, pero queda registrado como diferencia semántica.
 3. El comando `vinext check` devolvió exit code 0 aun reportando un issue. Por eso el workflow de Dalil no confía sólo en el código de salida: falla si el reporte contiene incompatibilidades marcadas con `✗`.
 
+## Segunda medición
+
+Después de agregar `"type": "module"` y endurecer el gate, el preflight produjo:
+
+```text
+Overall: 94% compatible
+8 supported
+1 partial
+0 issues
+```
+
+El único soporte parcial restante es `reactStrictMode` en App Router. El CI general siguió PASS, incluyendo instalación con lockfile congelado, security baseline, typecheck, build y audit de dependencias de producción.
+
+Resultado del gate actual: **PASS con una diferencia parcial conocida y documentada; sin incompatibilidades bloqueantes.**
+
 ## Corrección acotada
 
 Esta rama agrega únicamente:
