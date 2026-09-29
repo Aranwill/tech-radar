@@ -1,11 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tech Radar">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Dalil">
+  <defs>
+    <linearGradient id="dalil-blue" x1="96" y1="416" x2="408" y2="88" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0057ff"/>
+      <stop offset="0.52" stop-color="#00a8ff"/>
+      <stop offset="1" stop-color="#22f0ff"/>
+    </linearGradient>
+    <radialGradient id="dalil-core" cx="0" cy="0" r="1" gradientTransform="translate(284 256) rotate(90) scale(42)">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.35" stop-color="#8ff7ff"/>
+      <stop offset="1" stop-color="#00c8ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
   <rect width="512" height="512" rx="112" fill="#050b14"/>
-  <circle cx="256" cy="256" r="160" fill="none" stroke="#00a8ff" stroke-width="16" opacity=".22"/>
-  <circle cx="256" cy="256" r="104" fill="none" stroke="#00a8ff" stroke-width="16" opacity=".38"/>
-  <circle cx="256" cy="256" r="48" fill="none" stroke="#00a8ff" stroke-width="16" opacity=".62"/>
-  <path d="M256 256 382 130" stroke="#00a8ff" stroke-width="22" stroke-linecap="round"/>
-  <circle cx="256" cy="256" r="18" fill="#00a8ff"/>
-  <circle cx="382" cy="130" r="14" fill="#eaf6ff"/>
-  <circle cx="160" cy="194" r="11" fill="#00a8ff" opacity=".78"/>
-  <circle cx="334" cy="324" r="10" fill="#00a8ff" opacity=".56"/>
+  <path
+    d="M116 72h154c103 0 186 82 186 184s-83 184-186 184H116V330l80-74-80-74V72Zm86 74v64l50 46-50 46v64h68c62 0 112-49 112-110s-50-110-112-110h-68Z"
+    fill="url(#dalil-blue)"
+  />
+  <g fill="none" stroke-linecap="round">
+    <circle cx="284" cy="256" r="58" stroke="#00c8ff" stroke-width="10" opacity=".86"/>
+    <circle cx="284" cy="256" r="94" stroke="#0077ff" stroke-width="10" opacity=".66"/>
+    <circle cx="284" cy="256" r="130" stroke="#0057ff" stroke-width="10" opacity=".48"/>
+    <path d="M284 256 368 172" stroke="#8ff7ff" stroke-width="13"/>
+  </g>
+  <circle cx="284" cy="256" r="42" fill="url(#dalil-core)"/>
+  <circle cx="284" cy="256" r="11" fill="#eafcff"/>
 </svg>

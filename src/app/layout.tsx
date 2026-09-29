@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     default: "Dalil",
     template: "%s · Dalil",
   },
-  description: "Radar de inteligencia tecnológica con fuentes trazables.",
+  description: "Dalil · Inteligencia tecnológica con fuentes trazables.",
   applicationName: "Dalil",
   icons: {
     icon: "/icon.svg",
