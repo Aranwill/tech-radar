@@ -1,5 +1,14 @@
 # Foundation 0.1
 
+## Identidad
+
+El producto se llama **Dalil** (`دليل`, transliterado `Dalīl` o `Dalil`).
+
+Para este proyecto se adopta el sentido de **guía / indicio / evidencia**: una herramienta para orientarse entre señales tecnológicas, conservar procedencia y facilitar el acceso a las fuentes originales.
+
+El nombre técnico del repositorio puede seguir siendo `tech-radar` durante la etapa de construcción; cualquier migración de nombres técnicos se decidirá y ejecutará por separado.
+
+
 ## Objetivo
 
 Construir una base pequeña, desplegable y entendible para un radar global de información tecnológica. Esta etapa no intenta resolver ingestión, ranking ni IA: establece la interfaz, los contratos y los límites de seguridad.
