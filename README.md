@@ -53,6 +53,8 @@ También se define una observabilidad geográfica privacy-first: actividad agreg
 
 Ver [docs/CLOUD_RUNTIME_OBSERVABILITY_V1.md](docs/CLOUD_RUNTIME_OBSERVABILITY_V1.md).
 
+El procedimiento controlado para crear, migrar y verificar la primera D1 real vive en [docs/D1_BOOTSTRAP_V1.md](docs/D1_BOOTSTRAP_V1.md).
+
 ## Desarrollo local
 
 Requiere Node.js 20.19 o superior y pnpm 11.28.0.

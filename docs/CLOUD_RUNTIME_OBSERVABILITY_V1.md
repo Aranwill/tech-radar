@@ -431,6 +431,7 @@ Controles previstos:
 - migraciones reproducibles: **validadas localmente**;
 - repositorios/snapshots: **contrato de escritura implementado**;
 - adapter de persistence: **colector administrativo D1 V1 implementado, activación remota pendiente**;
+- bootstrap remoto: **procedimiento y verificador read-only implementados; ejecución contra cuenta real pendiente**;
 - backup/export verificable: pendiente.
 
 ### Fase C — Pipeline remoto

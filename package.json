@@ -18,7 +18,9 @@
     "security:baseline": "node scripts/security-baseline.mjs",
     "snapshot:github": "node scripts/github-snapshot.mjs",
     "snapshot:validate": "node scripts/validate-github-snapshot-pipeline.mjs",
-    "history:validate": "node scripts/validate-github-history.mjs"
+    "history:validate": "node scripts/validate-github-history.mjs",
+    "d1:verify": "node scripts/verify-d1-remote.mjs",
+    "d1:verify:syntax": "node --check scripts/verify-d1-remote.mjs"
   },
   "dependencies": {
     "next": "16.3.6",

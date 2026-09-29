@@ -44,6 +44,9 @@ jobs:
       - name: Validate D1 schema
         run: pnpm schema:validate
 
+      - name: Validate D1 remote verifier syntax
+        run: pnpm d1:verify:syntax
+
       - name: Validate GitHub snapshot pipeline
         run: pnpm snapshot:validate
 
