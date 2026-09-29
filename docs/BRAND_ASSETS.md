@@ -59,7 +59,7 @@ En esta rama:
 - el hero usa `public/brand/dalil-mark.svg` directamente;
 - el wordmark usa `public/brand/dalil-wordmark.svg` como máscara exacta para conservar geometría y adaptar contraste entre dark/light;
 - manifest y metadata siguen apuntando a `/icon.svg`;
-- dark mode adopta `#01081A`, muestreado del fondo de la referencia del logo, con superficies azuladas compatibles.
+- dark mode adopta `#000612`, una versión más profunda del navy de la referencia del logo, con superficies azuladas apenas elevadas para conservar jerarquía.
 
 Composición responsive:
 
@@ -88,3 +88,8 @@ La UI no incorpora navegación ficticia del mockup: sólo se aplican componentes
 - render estable en Chromium/Edge;
 - render estable en mobile;
 - CI y Cloudflare preflight PASS.
+
+
+## Footer
+
+El footer reutiliza el wordmark oficial DALIL en lugar de texto tipográfico genérico. De esta forma conserva la A triangular y la identidad de marca también en tamaños pequeños.

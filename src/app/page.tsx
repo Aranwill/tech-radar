@@ -68,9 +68,10 @@ export default function Home() {
       <LiveGithubRepositories />
 
       <footer className="footer-note">
-        <strong>Dalil</strong>
+        <span className="footer-wordmark" aria-hidden="true" />
+        <span className="sr-only">DALIL</span>
         <span>source-first · datos verificables · mobile-first · PWA</span>
-        <span className="footer-legal">© 2026 Dalil. Todos los derechos reservados.</span>
+        <span className="footer-legal">© 2026 DALIL. Todos los derechos reservados.</span>
         <span className="footer-made">
           Hecho con <span className="footer-heart" role="img" aria-label="amor">❤️</span> por <strong>Aranwill</strong>.
         </span>

@@ -16,15 +16,15 @@
 }
 
 html[data-theme="dark"] {
-  --bg: #01081a;
-  --surface: rgba(5, 24, 43, 0.84);
-  --surface-strong: #071827;
-  --border: rgba(126, 178, 220, 0.16);
+  --bg: #000612;
+  --surface: rgba(4, 18, 33, 0.88);
+  --surface-strong: #061522;
+  --border: rgba(112, 166, 210, 0.15);
   --text: #eaf4ff;
   --muted: #91a9bf;
   --accent: #00c8ff;
   --accent-soft: rgba(0, 200, 255, 0.14);
-  --glow: rgba(0, 200, 255, 0.16);
+  --glow: rgba(0, 174, 255, 0.12);
   --shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
   --wordmark-start: #ffffff;
   --wordmark-end: #cbd3db;
@@ -32,15 +32,15 @@ html[data-theme="dark"] {
 
 @media (prefers-color-scheme: dark) {
   html:not([data-theme]) {
-    --bg: #01081a;
-    --surface: rgba(5, 24, 43, 0.84);
-    --surface-strong: #071827;
-    --border: rgba(126, 178, 220, 0.16);
+    --bg: #000612;
+    --surface: rgba(4, 18, 33, 0.88);
+    --surface-strong: #061522;
+    --border: rgba(112, 166, 210, 0.15);
     --text: #eaf4ff;
     --muted: #91a9bf;
     --accent: #00c8ff;
     --accent-soft: rgba(0, 200, 255, 0.14);
-    --glow: rgba(0, 200, 255, 0.16);
+    --glow: rgba(0, 174, 255, 0.12);
     --shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
     --wordmark-start: #ffffff;
     --wordmark-end: #cbd3db;
@@ -634,6 +634,15 @@ h1 {
   text-align: center;
   color: var(--muted);
   font-size: 0.84rem;
+}
+
+.footer-wordmark {
+  width: 78px;
+  height: 15px;
+  display: block;
+  background: linear-gradient(180deg, var(--wordmark-start), var(--wordmark-end));
+  -webkit-mask: url("/brand/dalil-wordmark.svg") center / contain no-repeat;
+  mask: url("/brand/dalil-wordmark.svg") center / contain no-repeat;
 }
 
 .footer-legal {
