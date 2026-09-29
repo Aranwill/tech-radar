@@ -18,6 +18,11 @@ const githubWebUrlSchema = z.string().url().refine((value) => {
   return url.protocol === "https:" && url.hostname === "github.com";
 }, "GitHub devolvió una URL web no permitida.");
 
+const githubAvatarUrlSchema = z.string().url().refine((value) => {
+  const url = new URL(value);
+  return url.protocol === "https:" && url.hostname === "avatars.githubusercontent.com";
+}, "GitHub devolvió una URL de avatar no permitida.");
+
 const githubRepositorySchema = z.object({
   id: z.number().int().positive(),
   full_name: z.string().min(1).max(100),
@@ -31,11 +36,16 @@ const githubRepositorySchema = z.object({
   updated_at: z.string().datetime(),
 });
 
-const contributorProbeSchema = z.array(
-  z.object({
-    id: z.number().int().positive(),
-  }),
-).max(1);
+const contributorProbeSchema = z.array(z.object({
+  id: z.number().int().positive(),
+})).max(1);
+
+const githubContributorSchema = z.object({
+  login: z.string().min(1).max(80),
+  avatar_url: githubAvatarUrlSchema,
+  html_url: githubWebUrlSchema,
+  contributions: z.number().int().nonnegative(),
+});
 
 function githubHeaders() {
   const token = process.env.GITHUB_TOKEN?.trim();
@@ -68,19 +78,13 @@ async function parseBoundedJson(response: Response) {
 }
 
 function getLastPageFromLinkHeader(linkHeader: string | null) {
-  if (!linkHeader) {
-    return null;
-  }
+  if (!linkHeader) return null;
 
   for (const segment of linkHeader.split(",")) {
-    if (!segment.includes('rel="last"')) {
-      continue;
-    }
+    if (!segment.includes('rel="last"')) continue;
 
     const match = segment.match(/<([^>]+)>/);
-    if (!match) {
-      return null;
-    }
+    if (!match) return null;
 
     const page = Number(new URL(match[1]).searchParams.get("page"));
     return Number.isInteger(page) && page >= 0 ? page : null;
@@ -101,19 +105,11 @@ async function fetchContributorCount(repository: (typeof curatedRepositories)[nu
       },
     );
 
-    if (response.status === 202) {
-      return undefined;
-    }
-
-    if (!response.ok) {
-      throw new Error("GitHub contributors respondió " + response.status + ".");
-    }
+    if (response.status === 202) return null;
+    if (!response.ok) throw new Error("GitHub contributors respondió " + response.status + ".");
 
     const raw = contributorProbeSchema.parse(await parseBoundedJson(response));
-
-    if (raw.length === 0) {
-      return 0;
-    }
+    if (raw.length === 0) return 0;
 
     return getLastPageFromLinkHeader(response.headers.get("link")) ?? 1;
   } catch (error) {
@@ -125,8 +121,40 @@ async function fetchContributorCount(repository: (typeof curatedRepositories)[nu
   }
 }
 
+async function fetchTopContributors(repository: (typeof curatedRepositories)[number]) {
+  try {
+    const response = await fetch(
+      GITHUB_API_ORIGIN + "/repos/" + repository + "/contributors?per_page=8&anon=false",
+      {
+        headers: githubHeaders(),
+        next: { revalidate: CACHE_SECONDS },
+        redirect: "error",
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      },
+    );
+
+    if (response.status === 202) return null;
+    if (!response.ok) throw new Error("GitHub contributors destacados respondió " + response.status + ".");
+
+    const raw = z.array(githubContributorSchema).max(8).parse(await parseBoundedJson(response));
+
+    return raw.map((contributor) => ({
+      login: contributor.login,
+      avatarUrl: contributor.avatar_url,
+      profileUrl: contributor.html_url,
+      contributions: contributor.contributions,
+    }));
+  } catch (error) {
+    console.warn("[github-source] contributors_preview_unavailable", {
+      repository,
+      reason: error instanceof Error ? error.message : "unknown_error",
+    });
+    return null;
+  }
+}
+
 async function fetchRepository(repository: (typeof curatedRepositories)[number]): Promise<RepositoryBlock> {
-  const [response, contributorCount] = await Promise.all([
+  const [response, contributorCount, contributors] = await Promise.all([
     fetch(GITHUB_API_ORIGIN + "/repos/" + repository, {
       headers: githubHeaders(),
       next: { revalidate: CACHE_SECONDS },
@@ -134,11 +162,10 @@ async function fetchRepository(repository: (typeof curatedRepositories)[number])
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     }),
     fetchContributorCount(repository),
+    fetchTopContributors(repository),
   ]);
 
-  if (!response.ok) {
-    throw new Error("GitHub respondió " + response.status + ".");
-  }
+  if (!response.ok) throw new Error("GitHub respondió " + response.status + ".");
 
   const raw = githubRepositorySchema.parse(await parseBoundedJson(response));
 
@@ -152,6 +179,7 @@ async function fetchRepository(repository: (typeof curatedRepositories)[number])
     forks: raw.forks_count,
     openIssuesAndPullRequests: raw.open_issues_count,
     contributorCount,
+    contributors,
     language: (raw.language ?? "Sin dato").slice(0, 40),
     tags: raw.topics.slice(0, 6).map((topic) => topic.slice(0, 30)),
     updatedAt: raw.updated_at,
@@ -161,7 +189,7 @@ async function fetchRepository(repository: (typeof curatedRepositories)[number])
 
 export async function getCuratedGithubRepositories() {
   const settled = await Promise.allSettled(curatedRepositories.map(fetchRepository));
-  const repositories = settled.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
+  const repositories = settled.flatMap((result) => result.status === "fulfilled" ? [result.value] : []);
   const failed = settled.filter((result) => result.status === "rejected").length;
 
   if (failed > 0) {
@@ -176,7 +204,7 @@ export async function getCuratedGithubRepositories() {
   }
 
   const enrichmentIncomplete = repositories.some(
-    (repository) => repository.contributorCount === null,
+    (repository) => repository.contributorCount === null || repository.contributors === null,
   );
 
   return {

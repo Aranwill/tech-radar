@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Radar de inteligencia tecnológica con fuentes trazables.",
     start_url: "/",
     display: "standalone",
-    background_color: "#071018",
-    theme_color: "#0f1720",
+    background_color: "#050b14",
+    theme_color: "#050b14",
     icons: [
       {
         src: "/icon.svg",

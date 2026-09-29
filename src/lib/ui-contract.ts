@@ -5,6 +5,13 @@ const safeUrl = z.string().url().refine((url) => {
   return protocol === "https:";
 }, "Sólo se permiten URLs HTTPS.");
 
+const repositoryContributorSchema = z.object({
+  login: z.string().min(1).max(80),
+  avatarUrl: safeUrl,
+  profileUrl: safeUrl,
+  contributions: z.number().int().nonnegative(),
+});
+
 const storyBlockSchema = z.object({
   id: z.string().min(1),
   kind: z.literal("story"),
@@ -27,6 +34,7 @@ export const repositoryBlockSchema = z.object({
   forks: z.number().int().nonnegative().optional(),
   openIssuesAndPullRequests: z.number().int().nonnegative().optional(),
   contributorCount: z.number().int().nonnegative().nullable().optional(),
+  contributors: z.array(repositoryContributorSchema).max(8).nullable().optional(),
   growth7d: z.number().optional(),
   language: z.string().min(1).max(40),
   tags: z.array(z.string().min(1).max(30)).max(6),

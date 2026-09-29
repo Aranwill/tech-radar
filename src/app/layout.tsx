@@ -10,13 +10,16 @@ export const metadata: Metadata = {
   },
   description: "Radar de inteligencia tecnológica con fuentes trazables.",
   applicationName: "Tech Radar",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export const viewport: Viewport = {
   colorScheme: "light dark",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f4f7fb" },
-    { media: "(prefers-color-scheme: dark)", color: "#071018" },
+    { media: "(prefers-color-scheme: light)", color: "#f4f1e8" },
+    { media: "(prefers-color-scheme: dark)", color: "#050b14" },
   ],
 };
 

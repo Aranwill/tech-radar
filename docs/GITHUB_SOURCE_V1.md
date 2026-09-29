@@ -66,7 +66,10 @@ Con `per_page=1`, el número de la última página informado por GitHub permite 
 - La UI muestra el valor exacto hasta 999 y `999+` a partir de ese punto para mantener la card compacta.
 - El valor completo permanece disponible como contexto accesible en la interfaz.
 - Si GitHub no puede resolver el endpoint de contribuidores, la API devuelve `contributorCount: null`, la card muestra `—` y el payload se marca como parcial.
-- No se cargan avatares ni imágenes externas.
+- Se consultan hasta ocho contribuidores destacados para representación visual.
+- En desktop se pueden mostrar hasta ocho avatares y en mobile hasta cuatro; el valor `+N` representa el total de contribuidores públicos observados, no sólo los restantes.
+- Los avatares sólo se aceptan desde `https://avatars.githubusercontent.com` y los perfiles desde `https://github.com`.
+- Si el preview de contribuidores falla, la card conserva el total y degrada sin romper la interfaz.
 - La misma caché de 15 minutos limita llamadas adicionales.
 
-El conteo se usa como señal descriptiva de comunidad; todavía no participa de ningún score de momentum.
+El conteo y los avatares son señales descriptivas de comunidad; todavía no participan de ningún score de momentum.
