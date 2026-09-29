@@ -41,7 +41,9 @@ No se calcula momentum real todavía: primero debemos acumular snapshots histór
 
 El colector GitHub Snapshots V1 ya define dry-run, persistencia D1 idempotente por ventanas de 6h y workflow remoto protegido por configuración explícita.
 
-Ver [docs/GITHUB_SOURCE_V1.md](docs/GITHUB_SOURCE_V1.md) y [docs/GITHUB_SNAPSHOTS_V1.md](docs/GITHUB_SNAPSHOTS_V1.md).
+GitHub History V1 define además baselines exactos 24h/7d/30d y diferencia histórico insuficiente de huecos operativos sin interpolar datos.
+
+Ver [docs/GITHUB_SOURCE_V1.md](docs/GITHUB_SOURCE_V1.md), [docs/GITHUB_SNAPSHOTS_V1.md](docs/GITHUB_SNAPSHOTS_V1.md) y [docs/GITHUB_HISTORY_V1.md](docs/GITHUB_HISTORY_V1.md).
 
 ## Infraestructura remota V1
 

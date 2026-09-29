@@ -47,6 +47,9 @@ jobs:
       - name: Validate GitHub snapshot pipeline
         run: pnpm snapshot:validate
 
+      - name: Validate GitHub history
+        run: pnpm history:validate
+
       - name: Typecheck
         run: pnpm typecheck
 
