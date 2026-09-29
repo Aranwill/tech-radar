@@ -38,12 +38,15 @@ El isotipo evita texto embebido para seguir siendo reutilizable en:
 
 ## Principios
 
+La imagen de referencia elegida por el propietario es la autoridad visual del isotipo. La vectorización debe conservar su silueta y lenguaje; no debe reinterpretarse como una D geométrica genérica.
+
 1. Debe reconocerse como `D` antes que como ilustración decorativa.
-2. El radar debe seguir visible a 32–64 px.
-3. No se deben añadir detalles internos que sólo funcionen en alta resolución.
-4. El azul eléctrico/cyan es parte de la dirección visual, pero el símbolo debe admitir versión monocromática.
-5. El fondo oscuro forma parte del asset de PWA actual; una variante transparente puede evaluarse por separado.
-6. El logo no debe sustituir información funcional ni reducir accesibilidad.
+2. Debe preservar la D exterior curva, el pilar izquierdo separado y el swoosh inferior de la referencia.
+3. El radar debe seguir visible a 32–64 px.
+4. No se deben añadir detalles internos que sólo funcionen en alta resolución.
+5. El azul eléctrico/cyan es parte de la dirección visual, pero el símbolo debe admitir versión monocromática.
+6. El fondo oscuro forma parte del asset de PWA actual; existe una variante transparente para UI.
+7. El logo no debe sustituir información funcional ni reducir accesibilidad.
 
 ## Integración candidata
 
