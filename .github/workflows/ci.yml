@@ -41,6 +41,9 @@ jobs:
       - name: Security baseline
         run: pnpm security:baseline
 
+      - name: Validate D1 schema
+        run: pnpm schema:validate
+
       - name: Typecheck
         run: pnpm typecheck
 

@@ -14,6 +14,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
+    "schema:validate": "node scripts/validate-d1-schema.mjs",
     "security:baseline": "node scripts/security-baseline.mjs"
   },
   "dependencies": {
