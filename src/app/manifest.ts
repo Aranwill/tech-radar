@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Tech Radar",
-    short_name: "Radar",
+    name: "Dalil",
+    short_name: "Dalil",
     description: "Radar de inteligencia tecnológica con fuentes trazables.",
     start_url: "/",
     display: "standalone",
