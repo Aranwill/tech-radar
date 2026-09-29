@@ -346,6 +346,27 @@ h1 {
   font-size: 1.35rem;
 }
 
+.metric-value-line {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.42rem;
+}
+
+.metric-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
+.language-dot {
+  width: 0.72rem;
+  height: 0.72rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
 .metric span {
   color: var(--muted);
   font-size: 0.78rem;
@@ -378,11 +399,19 @@ h1 {
   font-size: 0.78rem;
 }
 
-.repo-status-row span:nth-child(2) {
+.status-item {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.38rem;
+}
+
+.repo-status-row .status-item:nth-child(2) {
+  justify-content: center;
   text-align: center;
 }
 
-.repo-status-row span:last-child {
+.repo-status-row .status-item:last-child {
+  justify-content: flex-end;
   text-align: right;
 }
 
@@ -403,6 +432,69 @@ h1 {
 .tag-placeholder {
   border-style: dashed;
   opacity: 0.72;
+}
+
+.contributors-block {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.contributors-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.contributors-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.contributors-note {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.contributors-list {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+}
+
+.contributor {
+  position: relative;
+  display: inline-flex;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.contributor + .contributor {
+  margin-left: -0.45rem;
+}
+
+.contributor img {
+  width: 34px;
+  height: 34px;
+  display: block;
+  border: 2px solid var(--surface-strong);
+  border-radius: 999px;
+  background: var(--surface-strong);
+  object-fit: cover;
+}
+
+.contributor:hover,
+.contributor:focus-visible {
+  z-index: 2;
+  transform: translateY(-1px);
 }
 
 .stat-value {
@@ -519,8 +611,9 @@ h1 {
     gap: 0.35rem;
   }
 
-  .repo-status-row span:nth-child(2),
-  .repo-status-row span:last-child {
+  .repo-status-row .status-item:nth-child(2),
+  .repo-status-row .status-item:last-child {
+    justify-content: flex-start;
     text-align: left;
   }
 

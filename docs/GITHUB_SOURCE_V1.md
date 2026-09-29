@@ -55,3 +55,16 @@ La siguiente etapa será persistir snapshots y derivar momentum de nuestras prop
 ## Semántica de issues
 
 El campo `open_issues_count` de GitHub se expone en la UI como **issues/PR abiertas** para evitar presentarlo como un conteo exclusivo de Issues. En la API REST de GitHub, los pull requests comparten la semántica base de Issues y deben distinguirse explícitamente cuando se necesita un conteo separado.
+
+
+## Contribuidores destacados
+
+Cada repositorio consulta además `/repos/{owner}/{repo}/contributors?per_page=4` y muestra hasta cuatro contribuidores destacados por contribuciones.
+
+- No se presenta ese subconjunto como el total de contribuidores.
+- Si GitHub no puede resolver el endpoint de contribuidores, la card sigue disponible sin bloquear el repositorio.
+- Los avatares se aceptan únicamente desde `https://avatars.githubusercontent.com`.
+- Los perfiles se validan como enlaces `https://github.com`.
+- La misma caché de 15 minutos limita llamadas adicionales.
+
+Esto añade una señal de comunidad sin convertirla todavía en un score de momentum.

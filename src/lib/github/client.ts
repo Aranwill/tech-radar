@@ -18,6 +18,11 @@ const githubWebUrlSchema = z.string().url().refine((value) => {
   return url.protocol === "https:" && url.hostname === "github.com";
 }, "GitHub devolvió una URL web no permitida.");
 
+const githubAvatarUrlSchema = z.string().url().refine((value) => {
+  const url = new URL(value);
+  return url.protocol === "https:" && url.hostname === "avatars.githubusercontent.com";
+}, "GitHub devolvió una URL de avatar no permitida.");
+
 const githubRepositorySchema = z.object({
   id: z.number().int().positive(),
   full_name: z.string().min(1).max(100),
@@ -29,6 +34,13 @@ const githubRepositorySchema = z.object({
   language: z.string().nullable(),
   topics: z.array(z.string()).optional().default([]),
   updated_at: z.string().datetime(),
+});
+
+const githubContributorSchema = z.object({
+  login: z.string().min(1).max(80),
+  avatar_url: githubAvatarUrlSchema,
+  html_url: githubWebUrlSchema,
+  contributions: z.number().int().nonnegative(),
 });
 
 function githubHeaders() {
@@ -61,13 +73,50 @@ async function parseBoundedJson(response: Response) {
   return JSON.parse(new TextDecoder().decode(payload)) as unknown;
 }
 
+async function fetchTopContributors(repository: (typeof curatedRepositories)[number]) {
+  try {
+    const response = await fetch(
+      GITHUB_API_ORIGIN + "/repos/" + repository + "/contributors?per_page=4&anon=false",
+      {
+        headers: githubHeaders(),
+        next: { revalidate: CACHE_SECONDS },
+        redirect: "error",
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      },
+    );
+
+    if (response.status === 202) {
+      return undefined;
+    }
+
+    if (!response.ok) {
+      throw new Error("GitHub contributors respondió " + response.status + ".");
+    }
+
+    const raw = z.array(githubContributorSchema).max(4).parse(await parseBoundedJson(response));
+
+    return raw.map((contributor) => ({
+      login: contributor.login,
+      avatarUrl: contributor.avatar_url,
+      profileUrl: contributor.html_url,
+      contributions: contributor.contributions,
+    }));
+  } catch {
+    console.warn("[github-source] contributors_unavailable", { repository });
+    return undefined;
+  }
+}
+
 async function fetchRepository(repository: (typeof curatedRepositories)[number]): Promise<RepositoryBlock> {
-  const response = await fetch(GITHUB_API_ORIGIN + "/repos/" + repository, {
-    headers: githubHeaders(),
-    next: { revalidate: CACHE_SECONDS },
-    redirect: "error",
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-  });
+  const [response, contributors] = await Promise.all([
+    fetch(GITHUB_API_ORIGIN + "/repos/" + repository, {
+      headers: githubHeaders(),
+      next: { revalidate: CACHE_SECONDS },
+      redirect: "error",
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    }),
+    fetchTopContributors(repository),
+  ]);
 
   if (!response.ok) {
     throw new Error("GitHub respondió " + response.status + ".");
@@ -86,6 +135,7 @@ async function fetchRepository(repository: (typeof curatedRepositories)[number])
     openIssuesAndPullRequests: raw.open_issues_count,
     language: (raw.language ?? "Sin dato").slice(0, 40),
     tags: raw.topics.slice(0, 6).map((topic) => topic.slice(0, 30)),
+    contributors,
     updatedAt: raw.updated_at,
     dataState: "live",
   });
