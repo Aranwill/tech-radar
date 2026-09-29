@@ -11,6 +11,8 @@
   --accent-soft: rgba(0, 87, 255, 0.12);
   --glow: rgba(0, 102, 255, 0.16);
   --shadow: 0 18px 60px rgba(24, 48, 82, 0.09);
+  --wordmark-start: #102033;
+  --wordmark-end: #4a6078;
 }
 
 html[data-theme="dark"] {
@@ -24,6 +26,8 @@ html[data-theme="dark"] {
   --accent-soft: rgba(0, 200, 255, 0.14);
   --glow: rgba(0, 200, 255, 0.14);
   --shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+  --wordmark-start: #ffffff;
+  --wordmark-end: #cbd3db;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -38,6 +42,8 @@ html[data-theme="dark"] {
     --accent-soft: rgba(0, 200, 255, 0.14);
     --glow: rgba(0, 200, 255, 0.14);
     --shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+    --wordmark-start: #ffffff;
+    --wordmark-end: #cbd3db;
   }
 }
 
@@ -109,14 +115,14 @@ a {
   filter: drop-shadow(0 0 16px color-mix(in srgb, var(--accent) 24%, transparent));
 }
 
-.brand-name {
-  color: var(--accent);
-  font-size: clamp(1rem, 1.7vw, 1.35rem);
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  line-height: 1;
-  text-transform: uppercase;
-  text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 34%, transparent);
+.brand-wordmark {
+  width: 118px;
+  height: 24px;
+  display: block;
+  flex: 0 0 auto;
+  background: linear-gradient(180deg, var(--wordmark-start), var(--wordmark-end));
+  -webkit-mask: url("/brand/dalil-wordmark-mask.svg") center / contain no-repeat;
+  mask: url("/brand/dalil-wordmark-mask.svg") center / contain no-repeat;
 }
 
 h1,
@@ -685,11 +691,16 @@ h1 {
   }
 
   .brand-mark {
-    width: 58px;
-    height: 58px;
+    width: 66px;
+    height: 64px;
   }
 
-  .brand-name,
+  .brand-wordmark {
+    width: 112px;
+    height: 21px;
+  }
+
+  .brand-wordmark,
   .topbar h1,
   .lede {
     text-align: center;
@@ -759,8 +770,13 @@ h1 {
   }
 
   .brand-mark {
-    width: 54px;
-    height: 54px;
+    width: 62px;
+    height: 61px;
+  }
+
+  .brand-wordmark {
+    width: 108px;
+    height: 20px;
   }
 
   h1 {

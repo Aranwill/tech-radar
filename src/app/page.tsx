@@ -19,7 +19,8 @@ export default function Home() {
               height="56"
               aria-hidden="true"
             />
-            <div className="brand-name">DALIL</div>
+            <span className="brand-wordmark" aria-hidden="true" />
+            <span className="sr-only">DALIL</span>
           </div>
           <h1>Inteligencia tecnológica.</h1>
           <p className="lede">

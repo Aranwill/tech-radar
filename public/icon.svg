@@ -1,84 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Dalil">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260" role="img" aria-label="Dalil">
+  <rect width="260" height="260" rx="56" fill="#050b14"/>
   <defs>
-    <linearGradient id="dalil-shell" x1="118" y1="420" x2="410" y2="86" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#0759ff"/>
-      <stop offset=".46" stop-color="#0b91ff"/>
-      <stop offset="1" stop-color="#29f1ff"/>
+    <linearGradient id="shell" x1="18" y1="242" x2="239" y2="12" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0557ff"/>
+      <stop offset=".45" stop-color="#087fff"/>
+      <stop offset=".72" stop-color="#11baff"/>
+      <stop offset="1" stop-color="#31f0ff"/>
     </linearGradient>
-    <linearGradient id="dalil-swoosh" x1="150" y1="420" x2="306" y2="230" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#0870ff"/>
-      <stop offset=".55" stop-color="#16b7ff"/>
-      <stop offset="1" stop-color="#8ffaff"/>
+    <linearGradient id="pillar" x1="35" y1="205" x2="42" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#074dff"/>
+      <stop offset=".55" stop-color="#1aa8ff"/>
+      <stop offset="1" stop-color="#8df9ff"/>
     </linearGradient>
-    <radialGradient id="dalil-glow" cx="0" cy="0" r="1" gradientTransform="translate(282 256) rotate(90) scale(44)">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset=".24" stop-color="#b9fbff"/>
-      <stop offset=".6" stop-color="#22d7ff" stop-opacity=".55"/>
-      <stop offset="1" stop-color="#00b8ff" stop-opacity="0"/>
+    <radialGradient id="core" cx="0" cy="0" r="1" gradientTransform="translate(127 130) rotate(90) scale(22)">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset=".22" stop-color="#bffcff"/>
+      <stop offset=".58" stop-color="#22dbff" stop-opacity=".65"/>
+      <stop offset="1" stop-color="#12c8ff" stop-opacity="0"/>
     </radialGradient>
-    <filter id="dalil-needle-glow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="5" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
-
-  <rect width="512" height="512" rx="112" fill="#050b14"/>
-
-  <!-- Outer D: smooth cap, bowl and base -->
-  <path
-    d="M146 84H274
-       C376 84 438 154 438 256
-       C438 358 376 428 274 428
-       H146"
-    fill="none"
-    stroke="url(#dalil-shell)"
-    stroke-width="58"
-    stroke-linejoin="round"
-    stroke-linecap="butt"
-  />
-
-  <!-- Left separated pillar from the original mark -->
-  <path
-    d="M146 130
-       L186 171
-       V244
-       L146 292
-       Z"
-    fill="url(#dalil-shell)"
-  />
-
-  <!-- Inner rising blade / swoosh -->
-  <path
-    d="M146 428
-       V354
-       C171 329 204 300 239 275
-       C259 260 281 247 305 236
-       C280 268 257 299 237 331
-       C226 349 218 363 222 375
-       C226 388 239 393 258 393
-       H278"
-    fill="url(#dalil-swoosh)"
-  />
-
-  <!-- Radar -->
+  <path d="M 24,13 L 39,31 L 49,38 L 57,41 L 139,42 L 158,46 L 172,52 L 182,59 L 195,72 L 203,84 L 211,106 L 213,132 L 211,145 L 206,160 L 192,182 L 179,194 L 170,200 L 155,207 L 136,212 L 90,214 L 81,212 L 77,207 L 77,193 L 80,184 L 90,167 L 89,166 L 99,156 L 98,157 L 97,155 L 101,151 L 101,147 L 98,151 L 94,150 L 86,155 L 83,155 L 78,158 L 76,157 L 77,158 L 72,162 L 68,162 L 69,163 L 67,165 L 65,164 L 66,165 L 64,167 L 62,166 L 62,168 L 58,172 L 56,171 L 57,170 L 54,173 L 55,174 L 53,176 L 52,175 L 53,176 L 43,184 L 43,187 L 40,188 L 41,189 L 34,197 L 35,199 L 33,199 L 34,201 L 32,201 L 33,203 L 31,203 L 26,216 L 23,240 L 140,239 L 155,236 L 173,230 L 186,223 L 202,211 L 213,199 L 227,175 L 233,158 L 236,141 L 236,110 L 233,92 L 231,91 L 232,89 L 230,88 L 231,85 L 229,84 L 229,79 L 227,79 L 227,74 L 225,74 L 226,72 L 224,71 L 224,68 L 222,68 L 223,66 L 221,66 L 221,62 L 220,63 L 218,61 L 219,59 L 218,60 L 214,55 L 215,53 L 214,54 L 211,51 L 212,49 L 211,50 L 197,36 L 198,35 L 197,36 L 190,31 L 191,30 L 188,30 L 188,28 L 187,29 L 186,27 L 185,28 L 184,26 L 181,26 L 177,22 L 172,22 L 169,19 L 153,15 L 137,13 Z" fill="url(#shell)"/>
+  <path d="M 28,56 L 26,57 L 26,75 L 25,76 L 24,75 L 24,67 L 24,198 L 26,197 L 29,190 L 36,180 L 51,162 L 51,86 L 51,96 L 50,97 L 49,96 L 49,83 L 47,79 L 48,78 L 31,61 Z" fill="url(#pillar)"/>
   <g fill="none" stroke-linecap="round">
-    <circle cx="282" cy="256" r="48" stroke="#26e6ff" stroke-width="6.5" opacity=".95"/>
-    <circle cx="282" cy="256" r="82" stroke="#148cff" stroke-width="6" opacity=".78"/>
-    <circle cx="282" cy="256" r="116" stroke="#0759ff" stroke-width="5.5" opacity=".58"/>
+    <circle cx="127" cy="130" r="29" stroke="#14dfff" stroke-width="2.3" opacity=".95"/>
+    <circle cx="127" cy="130" r="50" stroke="#0b8cff" stroke-width="2.4" opacity=".84" stroke-dasharray="268 46" stroke-dashoffset="20"/>
+    <circle cx="127" cy="130" r="72" stroke="#0757e8" stroke-width="2.5" opacity=".74" stroke-dasharray="382 70" stroke-dashoffset="22"/>
+    <path d="M127 130 L194 63" stroke="#a7fbff" stroke-width="3.2" filter="url(#glow)"/>
   </g>
-
-  <!-- Needle -->
-  <path
-    d="M282 256 L365 173"
-    stroke="#a8fbff"
-    stroke-width="8"
-    stroke-linecap="round"
-    filter="url(#dalil-needle-glow)"
-  />
-
-  <circle cx="282" cy="256" r="44" fill="url(#dalil-glow)"/>
-  <circle cx="282" cy="256" r="10" fill="#ecfeff"/>
+  <circle cx="127" cy="130" r="20" fill="url(#core)"/>
+  <circle cx="127" cy="130" r="5" fill="#efffff"/>
 </svg>

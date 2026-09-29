@@ -18,9 +18,12 @@ Tagline:
 
 ## Isotipo
 
-Asset canónico candidato:
+Assets canónicos candidatos:
 
-`public/brand/dalil-mark.svg`
+- `public/brand/dalil-mark.svg`
+- `public/brand/dalil-mark-transparent.svg`
+- `public/brand/dalil-wordmark-mask.svg`
+- `public/brand/dalil-wordmark-reference.svg`
 
 Concepto:
 
@@ -38,7 +41,7 @@ El isotipo evita texto embebido para seguir siendo reutilizable en:
 
 ## Principios
 
-La imagen de referencia elegida por el propietario es la autoridad visual del isotipo. La vectorización debe conservar su silueta y lenguaje; no debe reinterpretarse como una D geométrica genérica.
+La imagen de referencia elegida por el propietario es la autoridad visual del sistema completo. La vectorización se traza sobre esa referencia para conservar tanto la silueta del isotipo como el wordmark DALIL —incluida la A triangular— y no debe reinterpretarse con tipografías genéricas.
 
 1. Debe reconocerse como `D` antes que como ilustración decorativa.
 2. Debe preservar la D exterior curva, el pilar izquierdo separado y el swoosh inferior de la referencia.
@@ -55,8 +58,10 @@ En esta rama:
 - `public/icon.svg` usa el isotipo con fondo oscuro para favicon/PWA;
 - `src/app/icon.svg` usa el mismo vector;
 - `public/brand/dalil-mark-transparent.svg` ofrece el isotipo sin fondo para la UI;
+- `public/brand/dalil-wordmark-mask.svg` conserva la geometría exacta del wordmark y permite color adaptativo dark/light;
+- `public/brand/dalil-wordmark-reference.svg` conserva la versión plateada de referencia;
 - manifest y metadata siguen apuntando a `/icon.svg`;
-- el hero integra el isotipo real con el wordmark `DALIL`.
+- el hero integra el isotipo trazado y el wordmark trazado; ya no usa texto genérico para DALIL.
 
 Composición responsive:
 
