@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/cloudflare-compat.yml"
+      - "docs/CLOUDFLARE_COMPATIBILITY_PREFLIGHT.md"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
