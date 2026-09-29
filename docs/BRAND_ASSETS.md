@@ -59,7 +59,7 @@ En esta rama:
 - el hero usa `public/brand/dalil-mark.svg` directamente;
 - el wordmark usa `public/brand/dalil-wordmark.svg` como máscara exacta para conservar geometría y adaptar contraste entre dark/light;
 - manifest y metadata siguen apuntando a `/icon.svg`;
-- dark mode adopta `#000612`, una versión más profunda del navy de la referencia del logo, con superficies azuladas apenas elevadas para conservar jerarquía.
+- dark mode adopta `#00030A`, un navy casi negro alineado con la referencia del logo. El glow azul se mantiene deliberadamente tenue para evitar que el fondo se perciba más claro que la marca.
 
 Composición responsive:
 
