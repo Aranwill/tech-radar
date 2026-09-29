@@ -18,6 +18,40 @@ Referencias:
 - https://developers.cloudflare.com/workers/framework-guides/web-apps/opennext/
 - https://github.com/cloudflare/vinext
 
+## Primera medición
+
+El primer run contra el árbol integrado produjo:
+
+```text
+Overall: 85% compatible
+Config: 2/3 options supported
+Libraries: 2/2 compatible
+App Router: compatible
+1 page: detected
+1 layout: detected
+1 route handler: detected
+```
+
+Hallazgos:
+
+1. **Issue concreto:** faltaba `"type": "module"` en `package.json`. Vinext lo requiere para Vite.
+2. **Soporte parcial:** `reactStrictMode` no envuelve todavía el App Router como lo hace Next.js; no bloquea el build, pero queda registrado como diferencia semántica.
+3. El comando `vinext check` devolvió exit code 0 aun reportando un issue. Por eso el workflow de Dalil no confía sólo en el código de salida: falla si el reporte contiene incompatibilidades marcadas con `✗`.
+
+## Corrección acotada
+
+Esta rama agrega únicamente:
+
+```json
+"type": "module"
+```
+
+a `package.json`.
+
+No requiere cambio de lockfile ni incorpora vinext como dependencia. Los archivos de configuración existentes ya son compatibles con ESM (`.mjs`, `.ts` y scripts `.mjs`).
+
+La corrección sólo se acepta si el CI Next.js existente sigue PASS y el preflight deja de reportar issues bloqueantes.
+
 ## Regla de adopción
 
 Este preflight **no instala vinext en el proyecto** y no cambia el lockfile.
@@ -46,6 +80,8 @@ Antes de una migración real se debe volver a comprobar:
 - que el árbol actual sigue instalando con lockfile congelado;
 - que el chequeo oficial de compatibilidad puede ejecutarse en CI;
 - que el resultado queda visible en GitHub Actions;
+- que issues marcados por vinext convierten el preflight en fallo real;
+- que el requisito ESM no rompe el build Next.js existente;
 - que no se requieren secretos ni una cuenta Cloudflare para esta fase;
 - que la decisión de migración puede basarse en evidencia antes de generar archivos de proveedor.
 
@@ -65,7 +101,8 @@ Antes de una migración real se debe volver a comprobar:
 Sólo se prepara la migración real si:
 
 - CI general = PASS;
-- preflight vinext = PASS o sus incompatibilidades quedan entendidas y aceptadas;
+- preflight vinext sin issues `✗`;
+- cualquier soporte parcial queda entendido y documentado;
 - no aparecen gaps que comprometan las APIs Next.js ya utilizadas por Dalil;
 - la versión candidata respeta el cooldown de dependencias.
 
