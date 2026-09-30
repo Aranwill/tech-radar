@@ -44,6 +44,9 @@ jobs:
       - name: Validate D1 schema
         run: pnpm schema:validate
 
+      - name: Validate D1 runtime configuration contract
+        run: pnpm d1:config:validate
+
       - name: Validate D1 remote verifier syntax
         run: pnpm d1:verify:syntax
 
