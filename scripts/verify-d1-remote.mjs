@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { cloudflareD1Credentials } from "./lib/cloudflare-d1-config.mjs";
 
 const CLOUDFLARE_API_ORIGIN = "https://api.cloudflare.com";
 const REQUEST_TIMEOUT_MS = 10_000;
@@ -16,32 +16,6 @@ const REQUIRED_TABLES = Object.freeze([
   "claim_evidence",
   "country_metrics_daily",
 ]);
-
-if (existsSync(".env.local")) {
-  process.loadEnvFile(".env.local");
-}
-
-function requiredEnvironment(name) {
-  const value = process.env[name]?.trim();
-  if (!value) {
-    throw new Error("Falta variable requerida: " + name);
-  }
-  return value;
-}
-
-function validateIdentifiers(accountId, databaseId) {
-  if (!/^[0-9a-f]{32}$/i.test(accountId)) {
-    throw new Error("CLOUDFLARE_ACCOUNT_ID inválido.");
-  }
-
-  if (
-    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-      databaseId,
-    )
-  ) {
-    throw new Error("CLOUDFLARE_D1_DATABASE_ID inválido.");
-  }
-}
 
 async function parseBoundedJson(response) {
   const contentType = response.headers.get("content-type") ?? "";
@@ -116,10 +90,7 @@ function rowsFromSingleQuery(results) {
   return results[0].results;
 }
 
-const accountId = requiredEnvironment("CLOUDFLARE_ACCOUNT_ID");
-const databaseId = requiredEnvironment("CLOUDFLARE_D1_DATABASE_ID");
-const token = requiredEnvironment("CLOUDFLARE_D1_API_TOKEN");
-validateIdentifiers(accountId, databaseId);
+const { accountId, databaseId, token } = cloudflareD1Credentials();
 
 const tableRows = rowsFromSingleQuery(
   await queryD1({
