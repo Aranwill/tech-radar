@@ -54,19 +54,20 @@ El único soporte parcial restante es `reactStrictMode` en App Router. El CI gen
 
 Resultado del gate actual: **PASS con una diferencia parcial conocida y documentada; sin incompatibilidades bloqueantes.**
 
-## Corrección acotada
+## Corrección acotada original
 
-Esta rama agrega únicamente:
+La baseline del 2026-09-29 agregó únicamente `"type": "module"` a `package.json`. Ese cambio ya está integrado en `main` y resolvió el issue ESM observado.
 
-```json
-"type": "module"
-```
+## Refresh 2026-09-30
 
-a `package.json`.
+Esta rama de refresh modifica únicamente:
 
-No requiere cambio de lockfile ni incorpora vinext como dependencia. Los archivos de configuración existentes ya son compatibles con ESM (`.mjs`, `.ts` y scripts `.mjs`).
+- el pin de la sonda de compatibilidad: `vinext@1.0.0-beta.9 → vinext@1.0.0`;
+- la documentación de evidencia.
 
-La corrección sólo se acepta si el CI Next.js existente sigue PASS y el preflight deja de reportar issues bloqueantes.
+No modifica `package.json`, `pnpm-lock.yaml`, código de aplicación ni configuración de proveedor. Tampoco incorpora vinext como dependencia.
+
+El refresh sólo se acepta si el CI Next.js existente sigue PASS y el nuevo preflight no reporta issues bloqueantes.
 
 ## Regla de adopción
 
