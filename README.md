@@ -53,7 +53,7 @@ También se define una observabilidad geográfica privacy-first: actividad agreg
 
 Ver [docs/CLOUD_RUNTIME_OBSERVABILITY_V1.md](docs/CLOUD_RUNTIME_OBSERVABILITY_V1.md).
 
-El procedimiento controlado para crear, migrar y verificar la primera D1 real vive en [docs/D1_BOOTSTRAP_V1.md](docs/D1_BOOTSTRAP_V1.md).
+El procedimiento controlado para crear, migrar y verificar la primera D1 real vive en [docs/D1_BOOTSTRAP_V1.md](docs/D1_BOOTSTRAP_V1.md). El código y CI pueden prepararse sin credenciales; autenticación, recursos, IDs, tokens, variables locales, Secrets y activación del scheduler quedan reservados para la workstation personal autorizada.
 
 ## Desarrollo local
 
