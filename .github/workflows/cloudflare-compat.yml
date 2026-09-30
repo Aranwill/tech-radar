@@ -51,12 +51,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          pnpm dlx vinext@1.0.0-beta.9 check 2>&1 | tee vinext-check.txt
+          pnpm dlx vinext@1.0.0 check 2>&1 | tee vinext-check.txt
 
           {
             printf '%s\n' '## Cloudflare / vinext compatibility preflight'
             printf '\n'
-            printf '%s\n' '`vinext check` pinned to 1.0.0-beta.9 for this evidence run.'
+            printf '%s\n' '`vinext check` pinned to 1.0.0 for this evidence run.'
             printf '\n'
             printf '%s\n' '```text'
             cat vinext-check.txt
