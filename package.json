@@ -20,7 +20,8 @@
     "snapshot:validate": "node scripts/validate-github-snapshot-pipeline.mjs",
     "history:validate": "node scripts/validate-github-history.mjs",
     "d1:verify": "node scripts/verify-d1-remote.mjs",
-    "d1:verify:syntax": "node --check scripts/verify-d1-remote.mjs"
+    "d1:verify:syntax": "node --check scripts/verify-d1-remote.mjs",
+    "d1:config:validate": "node scripts/validate-d1-runtime-config.mjs"
   },
   "dependencies": {
     "next": "16.3.6",
