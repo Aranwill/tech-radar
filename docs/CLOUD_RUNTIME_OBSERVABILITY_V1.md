@@ -415,7 +415,29 @@ Controles previstos:
 8. revisión periódica de free tiers antes de ampliar una feature;
 9. no habilitar servicios pagos automáticamente.
 
-## Orden de implementación
+## Roadmap de implementación
+
+Las fases describen dependencias de capacidad, pero no exigen que todo su código se escriba de forma estrictamente serial.
+
+Para iniciar cuanto antes el histórico verificable de repositorios, Dalil preparó primero partes de Persistencia y Pipeline remoto (Fases B/C) mientras el scheduler permanece deshabilitado. Esto no autoriza saltar gates: la activación contra D1 real sigue requiriendo bootstrap, verificación y aprobación explícita antes de cualquier escritura programada.
+
+Estado de secuencia al 2026-09-30:
+
+```text
+scaffolding B/C
+      ↓
+hardening y CI
+      ↓
+bootstrap D1 real + evidencia
+      ↓
+scheduler controlado
+      ↓
+Deploy foundation A
+      ↓
+API / observabilidad D
+```
+
+La creación de recursos, autenticación, IDs, tokens, variables locales y Secrets se ejecuta únicamente desde la workstation personal autorizada.
 
 ### Fase A — Deploy foundation
 
