@@ -5,6 +5,7 @@ import {
   floorToSnapshotBucket,
   validateRepositoryConfig,
 } from "./lib/github-snapshot-core.mjs";
+import { cloudflareD1Credentials } from "./lib/cloudflare-d1-config.mjs";
 
 const GITHUB_API_ORIGIN = "https://api.github.com";
 const GITHUB_API_VERSION = "2026-03-10";
@@ -136,24 +137,8 @@ async function fetchRepositoryObservation(repository) {
   };
 }
 
-function requiredEnvironment(name) {
-  const value = process.env[name]?.trim();
-  if (!value) throw new Error("Falta variable requerida: " + name);
-  return value;
-}
-
 async function persistToD1(batch) {
-  const accountId = requiredEnvironment("CLOUDFLARE_ACCOUNT_ID");
-  const databaseId = requiredEnvironment("CLOUDFLARE_D1_DATABASE_ID");
-  const token = requiredEnvironment("CLOUDFLARE_D1_API_TOKEN");
-
-  if (!/^[A-Za-z0-9_-]{1,64}$/.test(accountId)) {
-    throw new Error("CLOUDFLARE_ACCOUNT_ID inválido.");
-  }
-
-  if (!/^[0-9a-fA-F-]{32,40}$/.test(databaseId)) {
-    throw new Error("CLOUDFLARE_D1_DATABASE_ID inválido.");
-  }
+  const { accountId, databaseId, token } = cloudflareD1Credentials();
 
   const response = await fetch(
     CLOUDFLARE_API_ORIGIN +
