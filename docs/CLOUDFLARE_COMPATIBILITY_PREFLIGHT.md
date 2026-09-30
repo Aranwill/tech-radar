@@ -54,6 +54,27 @@ El único soporte parcial restante es `reactStrictMode` en App Router. El CI gen
 
 Resultado del gate actual: **PASS con una diferencia parcial conocida y documentada; sin incompatibilidades bloqueantes.**
 
+## Tercera medición — vinext 1.0.0
+
+El refresh del 2026-09-30 contra `vinext@1.0.0` produjo:
+
+```text
+Overall: 94% compatible
+Config: 2/3 options supported
+Libraries: 2/2 compatible
+App Router: compatible
+1 page: detected
+1 layout: detected
+1 route handler: detected
+8 supported
+1 partial
+0 issues
+```
+
+No aparecieron incompatibilidades nuevas respecto de la segunda medición. El único soporte parcial continúa siendo `reactStrictMode` en App Router.
+
+Resultado del refresh: **PASS; 0 issues bloqueantes.**
+
 ## Corrección acotada original
 
 La baseline del 2026-09-29 agregó únicamente `"type": "module"` a `package.json`. Ese cambio ya está integrado en `main` y resolvió el issue ESM observado.
