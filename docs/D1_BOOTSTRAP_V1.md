@@ -26,6 +26,23 @@ scheduler habilitado
 
 No se salta ninguna etapa.
 
+## Límite de ejecución / handoff de workstation
+
+La preparación de código, documentación y CI puede realizarse desde cualquier entorno confiable porque no requiere credenciales.
+
+La ejecución contra la cuenta real de Cloudflare queda deliberadamente diferida a la workstation personal autorizada. Hasta ese momento **no** se deben:
+
+- autenticar usuarios de Cloudflare;
+- crear la D1 real;
+- copiar Account ID o Database ID;
+- crear API Tokens;
+- completar `.env.local`;
+- configurar GitHub Secrets;
+- habilitar `DALIL_SNAPSHOTS_ENABLED`;
+- ejecutar persistencia remota real.
+
+Este límite no bloquea el hardening del contrato, las pruebas deterministas ni la preparación del deployment.
+
 ## Estado previo requerido
 
 En `main` deben estar integrados:
@@ -127,6 +144,10 @@ Ejecutar:
 ```powershell
 pnpm d1:verify
 ```
+
+Tanto el verificador como el collector persistente consumen el mismo contrato de configuración compartido. Si existe `.env.local`, ambos lo cargan; en CI utilizan únicamente variables de entorno/Secrets.
+
+El contrato rechaza Account ID y Database ID que no tengan el formato esperado antes de realizar requests.
 
 El verificador:
 
