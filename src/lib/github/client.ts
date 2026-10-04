@@ -7,12 +7,40 @@ const GITHUB_API_ORIGIN = "https://api.github.com";
 const CACHE_SECONDS = 900;
 const REQUEST_TIMEOUT_MS = 8_000;
 const MAX_RESPONSE_BYTES = 1_000_000;
+const REPOSITORY_SEGMENT_PATTERN = /^[A-Za-z0-9_.-]{1,100}$/;
+
+function isRepositoryIdentifier(value: string) {
+  const parts = value.split("/");
+  return (
+    parts.length === 2 &&
+    parts.every(
+      (segment) =>
+        REPOSITORY_SEGMENT_PATTERN.test(segment) &&
+        segment !== "." &&
+        segment !== "..",
+    )
+  );
+}
+
+function repositoryApiPath(repository: string) {
+  if (!isRepositoryIdentifier(repository)) {
+    throw new Error("Repositorio curado inválido.");
+  }
+
+  const [owner, name] = repository.split("/");
+  return "/repos/" + encodeURIComponent(owner) + "/" + encodeURIComponent(name);
+}
 
 const curatedRepositoryConfigSchema = z.object({
   version: z.literal(1),
-  repositories: z.array(
-    z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/),
-  ).min(1).max(50),
+  repositories: z
+    .array(z.string().refine(isRepositoryIdentifier, "Repositorio curado inválido."))
+    .min(1)
+    .max(50)
+    .refine(
+      (repositories) => new Set(repositories).size === repositories.length,
+      "El catálogo GitHub contiene repositorios duplicados.",
+    ),
 });
 
 const curatedRepositories = curatedRepositoryConfigSchema.parse(repositoryConfig).repositories;
@@ -28,27 +56,31 @@ const githubAvatarUrlSchema = z.string().url().refine((value) => {
 }, "GitHub devolvió una URL de avatar no permitida.");
 
 const githubRepositorySchema = z.object({
-  id: z.number().int().positive(),
-  full_name: z.string().min(1).max(100),
+  id: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+  full_name: z.string().min(1).max(201),
+  private: z.literal(false),
+  visibility: z.literal("public"),
   description: z.string().nullable(),
   html_url: githubWebUrlSchema,
-  stargazers_count: z.number().int().nonnegative(),
-  forks_count: z.number().int().nonnegative(),
-  open_issues_count: z.number().int().nonnegative(),
+  stargazers_count: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  forks_count: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  open_issues_count: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   language: z.string().nullable(),
   topics: z.array(z.string()).optional().default([]),
   updated_at: z.string().datetime(),
 });
 
-const contributorProbeSchema = z.array(z.object({
-  id: z.number().int().positive(),
-})).max(1);
+const contributorProbeSchema = z.array(
+  z.object({
+    id: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+  }),
+).max(1);
 
 const githubContributorSchema = z.object({
   login: z.string().min(1).max(80),
   avatar_url: githubAvatarUrlSchema,
   html_url: githubWebUrlSchema,
-  contributions: z.number().int().nonnegative(),
+  contributions: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
 });
 
 function githubHeaders() {
@@ -91,16 +123,37 @@ function getLastPageFromLinkHeader(linkHeader: string | null) {
     if (!match) return null;
 
     const page = Number(new URL(match[1]).searchParams.get("page"));
-    return Number.isInteger(page) && page >= 0 ? page : null;
+    return Number.isSafeInteger(page) && page >= 0 ? page : null;
   }
 
   return null;
 }
 
+function assertPublicCanonicalRepository(
+  repository: string,
+  raw: z.infer<typeof githubRepositorySchema>,
+) {
+  const url = new URL(raw.html_url);
+  const expectedPath = "/" + repository.toLowerCase();
+  const actualPath = url.pathname.replace(/\/+$/, "").toLowerCase();
+
+  if (
+    raw.full_name.toLowerCase() !== repository.toLowerCase() ||
+    url.username ||
+    url.password ||
+    url.port ||
+    url.search ||
+    url.hash ||
+    actualPath !== expectedPath
+  ) {
+    throw new Error("GitHub devolvió un repositorio fuera del catálogo público permitido.");
+  }
+}
+
 async function fetchContributorCount(repository: string) {
   try {
     const response = await fetch(
-      GITHUB_API_ORIGIN + "/repos/" + repository + "/contributors?per_page=1&anon=false",
+      GITHUB_API_ORIGIN + repositoryApiPath(repository) + "/contributors?per_page=1&anon=false",
       {
         headers: githubHeaders(),
         next: { revalidate: CACHE_SECONDS },
@@ -128,7 +181,7 @@ async function fetchContributorCount(repository: string) {
 async function fetchTopContributors(repository: string) {
   try {
     const response = await fetch(
-      GITHUB_API_ORIGIN + "/repos/" + repository + "/contributors?per_page=8&anon=false",
+      GITHUB_API_ORIGIN + repositoryApiPath(repository) + "/contributors?per_page=8&anon=false",
       {
         headers: githubHeaders(),
         next: { revalidate: CACHE_SECONDS },
@@ -159,7 +212,7 @@ async function fetchTopContributors(repository: string) {
 
 async function fetchRepository(repository: string): Promise<RepositoryBlock> {
   const [response, contributorCount, contributors] = await Promise.all([
-    fetch(GITHUB_API_ORIGIN + "/repos/" + repository, {
+    fetch(GITHUB_API_ORIGIN + repositoryApiPath(repository), {
       headers: githubHeaders(),
       next: { revalidate: CACHE_SECONDS },
       redirect: "manual",
@@ -172,6 +225,7 @@ async function fetchRepository(repository: string): Promise<RepositoryBlock> {
   if (!response.ok) throw new Error("GitHub respondió " + response.status + ".");
 
   const raw = githubRepositorySchema.parse(await parseBoundedJson(response));
+  assertPublicCanonicalRepository(repository, raw);
 
   return repositoryBlockSchema.parse({
     id: "github-" + raw.id,

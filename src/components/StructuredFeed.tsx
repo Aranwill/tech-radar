@@ -18,7 +18,7 @@ function StoryCard({ block }: { block: StoryBlock }) {
           <div className="mini-label">Fuente</div>
           <strong>{block.source}</strong>
         </div>
-        <a className="card-link" href={block.sourceUrl} target="_blank" rel="noreferrer">
+        <a className="card-link" href={block.sourceUrl} target="_blank" rel="noopener noreferrer">
           Abrir original ↗
         </a>
       </div>
