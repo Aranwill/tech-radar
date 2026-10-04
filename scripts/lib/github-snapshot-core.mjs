@@ -94,59 +94,59 @@ export function resolveSnapshotRunOptions(args, now = new Date()) {
     throw new Error("Argumentos de snapshot inválidos.");
   }
 
-  let explicitAt = null;
-  let manual = false;
+  let runKind = null;
   let persist = false;
 
   for (const arg of args) {
-    if (arg === "--manual") {
-      manual = true;
+    if (arg === "--manual" || arg === "--scheduled") {
+      const nextRunKind = arg === "--manual" ? "manual" : "scheduled";
+      if (runKind !== null) {
+        throw new Error("El modo de ejecución no puede repetirse ni combinarse.");
+      }
+      runKind = nextRunKind;
       continue;
     }
 
     if (arg === "--persist") {
+      if (persist) {
+        throw new Error("--persist no puede repetirse.");
+      }
       persist = true;
       continue;
     }
 
-    if (arg === "--backfill") {
+    if (arg === "--backfill" || arg.startsWith("--at=")) {
       throw new Error(
-        "Backfill no habilitado: no se permite etiquetar métricas actuales como observaciones históricas.",
+        "Backfill/timestamp override no habilitado: el collector live sólo observa el bucket UTC corriente.",
       );
-    }
-
-    if (arg.startsWith("--at=")) {
-      if (explicitAt !== null) {
-        throw new Error("--at no puede repetirse.");
-      }
-      explicitAt = arg.slice("--at=".length);
-      continue;
     }
 
     throw new Error("Argumento de snapshot no reconocido: " + arg);
   }
 
-  if (explicitAt !== null && !manual) {
-    throw new Error("--at sólo se permite en dry-runs manuales.");
+  if (runKind === null) {
+    throw new Error("Se requiere modo explícito --manual o --scheduled.");
   }
 
-  if (explicitAt !== null && persist) {
-    throw new Error("--at no se permite junto con --persist.");
-  }
-
-  const observedAt = explicitAt === null
-    ? floorToSnapshotBucket(now)
-    : parseIso(explicitAt, "--at");
-
-  if (observedAt !== floorToSnapshotBucket(observedAt)) {
-    throw new Error("--at debe coincidir exactamente con un bucket UTC de 6h.");
+  if (runKind === "scheduled" && !persist) {
+    throw new Error("--scheduled requiere --persist.");
   }
 
   return Object.freeze({
-    observedAt,
-    runKind: manual ? "manual" : "scheduled",
+    observedAt: floorToSnapshotBucket(now),
+    runKind,
     persist,
   });
+}
+
+function validateExecutionId(value) {
+  if (
+    typeof value !== "string" ||
+    !/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$/.test(value)
+  ) {
+    throw new Error("executionId inválido.");
+  }
+  return value;
 }
 
 function validateSnapshotObservation(observation) {
@@ -238,14 +238,24 @@ export function buildSnapshotPersistenceBatch({
   observedAt,
   observations,
   failures = 0,
-  runKind = "scheduled",
+  runKind,
+  executionId,
+  startedAt,
+  finishedAt,
 }) {
   if (!Array.isArray(observations) || observations.length === 0) {
     throw new Error("Se requiere al menos una observación para persistir.");
   }
 
-  if (!["scheduled", "manual", "backfill"].includes(runKind)) {
+  if (!["scheduled", "manual"].includes(runKind)) {
     throw new Error("runKind inválido.");
+  }
+
+  const normalizedExecutionId = validateExecutionId(executionId);
+  const normalizedStartedAt = parseIso(startedAt, "startedAt");
+  const normalizedFinishedAt = parseIso(finishedAt, "finishedAt");
+  if (normalizedFinishedAt < normalizedStartedAt) {
+    throw new Error("finishedAt no puede ser anterior a startedAt.");
   }
 
   if (!Number.isInteger(failures) || failures < 0) {
@@ -267,7 +277,8 @@ export function buildSnapshotPersistenceBatch({
     itemIds.add(itemId);
   }
 
-  const runId = "github-snapshot:" + normalizedObservedAt;
+  const runId =
+    "github-snapshot:" + normalizedObservedAt + ":" + normalizedExecutionId;
   const status = failures === 0 ? "succeeded" : "partial";
   const totalSeen = normalizedObservations.length + failures;
 
@@ -295,7 +306,7 @@ export function buildSnapshotPersistenceBatch({
         items_written = 0,
         items_failed = 0,
         error_code = NULL`,
-      params: [runId, GITHUB_SOURCE_ID, runKind, normalizedObservedAt],
+      params: [runId, GITHUB_SOURCE_ID, runKind, normalizedStartedAt],
     },
   ];
 
@@ -364,7 +375,7 @@ export function buildSnapshotPersistenceBatch({
       WHERE id = ?`,
     params: [
       status,
-      normalizedObservedAt,
+      normalizedFinishedAt,
       totalSeen,
       normalizedObservations.length,
       failures,

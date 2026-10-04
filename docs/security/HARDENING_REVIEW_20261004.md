@@ -34,7 +34,7 @@ Una ejecución manual con persistencia queda bloqueada fuera de `refs/heads/main
 
 El collector ya no permite etiquetar métricas GitHub actuales como observaciones históricas.
 
-`--backfill` queda rechazado hasta que exista una fuente histórica real. `--at` sólo se permite para dry-run manual, nunca junto con persistencia y siempre en un bucket UTC exacto de 6h.
+`--backfill` y cualquier override `--at` quedan rechazados por el collector live. El modo también debe declararse explícitamente como `--manual` o `--scheduled`.
 
 ### DALIL-SEC-03 — Catálogo GitHub admitía dot-segments
 
@@ -80,26 +80,29 @@ La reachability observada corresponde al toolchain de glob/build, no a una ruta 
 
 ### DALIL-SC-02 — fflate / GHSA-px8p-9vwx-vf98
 
-**Estado:** MITIGATION CANDIDATE.
+**Estado:** CLOSED.
 
-CI identificó `fflate@0.7.3`: `unzipSync` puede entrar en loop infinito ante ZIP64 malformado. La advisory afecta `>=0.7.0 <0.7.5` y publica `0.7.5` como versión corregida.
+CI identificó `fflate@0.7.3`: `unzipSync` podía entrar en loop infinito ante ZIP64 malformado. La advisory afecta `>=0.7.0 <0.7.5`.
 
-DALIL fuerza temporalmente `fflate: 0.7.5` mediante un override exacto de pnpm. El cierre requiere evidencia de:
+DALIL fuerza temporalmente `fflate: 0.7.5` mediante un override exacto de pnpm. Evidencia observada sobre el candidate:
 
 - `pnpm install --frozen-lockfile` PASS;
+- Security baseline PASS;
 - typecheck/build Next PASS;
-- build/runtime vinext PASS;
-- audit sin GHSA-px8p-9vwx-vf98.
+- audit ya no reporta GHSA-px8p-9vwx-vf98;
+- el único finding de audit restante es `braces` HIGH.
 
 No se usa una excepción de audit.
 
-### DALIL-DATA-01 — ingestion_runs no es append-only por ejecución
+### DALIL-DATA-01 — ingestion_runs no era append-only por ejecución
 
-**Estado:** OPEN / DESIGN REQUIRED.
+**Estado:** CLOSED.
 
-El run ID actual deriva del bucket y un rerun del mismo bucket actualiza el mismo registro.
+Los snapshots conservan idempotencia por `(item_id, observed_at)`, pero cada intento de ingesta recibe ahora un run ID separado.
 
-Los snapshots sí deben seguir siendo idempotentes por `(item_id, observed_at)`, pero la auditoría operacional debería conservar cada intento de ingesta. Requiere una decisión de schema/contrato separada antes de afirmar que `ingestion_runs` registra cada ejecución.
+En GitHub Actions la identidad deriva de `GITHUB_RUN_ID + GITHUB_RUN_ATTEMPT`; localmente se usa un UUID. `started_at` y `finished_at` reflejan el tiempo real de ejecución, no el bucket del snapshot.
+
+El validador exige que un rerun del mismo bucket deje un único snapshot y dos `ingestion_runs`.
 
 ### DALIL-EDGE-01 — endpoint live puede amplificar requests upstream
 
@@ -140,3 +143,12 @@ No se declaran habilitados sin evidencia de configuración.
 - Actions de terceros están fijadas a SHA y checkout no persiste credenciales.
 
 Estos puntos son evidencia del estado revisado, no una garantía futura. El baseline automatizado debe impedir regresiones simples.
+
+
+### DALIL-SECOPS-02 — Rulesets de main
+
+**Estado:** OPEN / PLATFORM GOVERNANCE.
+
+La API de GitHub devolvió `rulesets=[]` para el repositorio. La integración actual no tiene permiso para leer el endpoint clásico de branch protection, por lo que no se infiere su estado.
+
+Antes de considerar el flujo de producción endurecido se debe configurar/verificar una protección explícita de `main` que exija PR y checks requeridos, especialmente porque el workflow programado ejecuta código de `main` con credenciales D1 de escritura.

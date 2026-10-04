@@ -29,7 +29,7 @@ Cada ejecución se normaliza a un bucket UTC de 6h:
 
 El par `(item_id, observed_at)` ya es clave primaria en `repository_snapshots`. Un rerun dentro del mismo bucket actualiza el snapshot existente en lugar de duplicarlo.
 
-Esto da semántica **idempotente por bucket**, útil frente a retries de GitHub Actions.
+Esto da semántica **idempotente por bucket** para los datos observados. La auditoría operacional es distinta: cada ejecución recibe un `ingestion_run` propio, con timestamps reales de inicio/fin y una identidad de ejecución separada. Un retry no borra evidencia de un intento anterior.
 
 ## Datos observados
 
@@ -48,11 +48,13 @@ No se descargan commits, issues, PRs ni contribuidores completos para crear el s
 
 ## Ejecución local
 
-Dry-run, sin escribir en D1:
+Dry-run manual, sin escribir en D1:
 
 ```bash
 pnpm snapshot:github
 ```
+
+El collector live exige modo explícito. Internamente sólo admite `--manual` o `--scheduled --persist`. No admite `--backfill` ni override de timestamp.
 
 Validación determinista del contrato SQL e idempotencia:
 
@@ -133,6 +135,8 @@ Es deliberadamente pequeño. La expansión del catálogo deberá revisar cuotas,
 - token Cloudflare sólo en GitHub Secrets;
 - timeouts;
 - redirects externos bloqueados;
+- modo de ejecución explícito;
+- sin backfill/timestamps históricos desde el collector live;
 - respuesta JSON acotada por tamaño;
 - queries D1 parametrizadas;
 - sin impresión de credenciales;

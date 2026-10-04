@@ -150,6 +150,7 @@ if (existsSync(snapshotWorkflowPath)) {
     "Reject production persistence outside main",
     "github.ref != 'refs/heads/main'",
     "node scripts/github-snapshot.mjs --manual --persist",
+    "node scripts/github-snapshot.mjs --scheduled --persist",
   ]) {
     if (!workflow.includes(required)) {
       fail("github-snapshots.yml: falta guard de persistencia: " + required);
@@ -171,6 +172,10 @@ for (const path of tracked) {
 }
 
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+if (packageJson.scripts?.["snapshot:github"] !== "node scripts/github-snapshot.mjs --manual") {
+  fail("package.json: snapshot:github debe declarar modo manual explícito");
+}
+
 if (packageJson.packageManager !== "pnpm@11.28.0") {
   fail("package.json: packageManager debe permanecer fijado a pnpm@11.28.0");
 }

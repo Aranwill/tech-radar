@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import {
@@ -196,10 +197,30 @@ async function persistToD1(batch) {
   );
 }
 
+function snapshotExecutionId(environment = process.env) {
+  const githubRunId = environment.GITHUB_RUN_ID?.trim();
+  const githubRunAttempt = environment.GITHUB_RUN_ATTEMPT?.trim();
+
+  if (githubRunId !== undefined || githubRunAttempt !== undefined) {
+    if (
+      !/^\d+$/.test(githubRunId ?? "") ||
+      !/^\d+$/.test(githubRunAttempt ?? "")
+    ) {
+      throw new Error("Identidad de ejecución GitHub Actions inválida.");
+    }
+
+    return "gha-" + githubRunId + "-" + githubRunAttempt;
+  }
+
+  return "local-" + randomUUID();
+}
+
 const configPath = resolve(process.cwd(), "config", "github-repositories.json");
 const config = JSON.parse(await readFile(configPath, "utf8"));
 const repositories = validateRepositoryConfig(config);
 const runOptions = resolveSnapshotRunOptions(process.argv.slice(2));
+const executionId = snapshotExecutionId();
+const runStartedAt = new Date().toISOString();
 
 const settled = await Promise.allSettled(
   repositories.map((repository) => fetchRepositoryObservation(repository)),
@@ -214,15 +235,20 @@ if (observations.length === 0) {
   throw new Error("No se obtuvo ninguna observación GitHub.");
 }
 
+const runFinishedAt = new Date().toISOString();
 const persistence = buildSnapshotPersistenceBatch({
   observedAt: runOptions.observedAt,
   observations,
   failures,
   runKind: runOptions.runKind,
+  executionId,
+  startedAt: runStartedAt,
+  finishedAt: runFinishedAt,
 });
 
 const summary = {
   observedAt: runOptions.observedAt,
+  executionId,
   runId: persistence.runId,
   status: persistence.status,
   repositoriesRequested: repositories.length,
