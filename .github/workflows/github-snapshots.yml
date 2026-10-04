@@ -21,15 +21,8 @@ concurrency:
 jobs:
   collect:
     if: github.event_name == 'workflow_dispatch' || vars.DALIL_SNAPSHOTS_ENABLED == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 8
-
-    env:
-      GITHUB_TOKEN: ${{ github.token }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
-      CLOUDFLARE_D1_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
-      PERSIST_SNAPSHOT: ${{ github.event_name == 'schedule' || inputs.persist == true }}
 
     steps:
       - name: Checkout
@@ -51,13 +44,33 @@ jobs:
       - name: Validate snapshot persistence contract
         run: node scripts/validate-github-snapshot-pipeline.mjs
 
-      - name: Collect GitHub snapshot
+      - name: Reject production persistence outside main
+        if: github.event_name == 'workflow_dispatch' && inputs.persist == true && github.ref != 'refs/heads/main'
         shell: bash
         run: |
-          set -euo pipefail
+          echo "::error::La persistencia D1 manual sólo está permitida desde refs/heads/main."
+          exit 1
 
-          if [[ "$PERSIST_SNAPSHOT" == "true" ]]; then
-            node scripts/github-snapshot.mjs --persist
-          else
-            node scripts/github-snapshot.mjs --manual
-          fi
+      - name: Collect GitHub snapshot (manual dry-run)
+        if: github.event_name == 'workflow_dispatch' && inputs.persist != true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/github-snapshot.mjs --manual
+
+      - name: Persist GitHub snapshot (manual main)
+        if: github.event_name == 'workflow_dispatch' && inputs.persist == true && github.ref == 'refs/heads/main'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+          CLOUDFLARE_D1_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+        run: node scripts/github-snapshot.mjs --manual --persist
+
+      - name: Persist GitHub snapshot (scheduled)
+        if: github.event_name == 'schedule'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+          CLOUDFLARE_D1_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
+        run: node scripts/github-snapshot.mjs --persist

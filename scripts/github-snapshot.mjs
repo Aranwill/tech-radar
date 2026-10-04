@@ -2,7 +2,8 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import {
   buildSnapshotPersistenceBatch,
-  floorToSnapshotBucket,
+  repositoryApiPath,
+  resolveSnapshotRunOptions,
   validateRepositoryConfig,
 } from "./lib/github-snapshot-core.mjs";
 import { cloudflareD1Credentials } from "./lib/cloudflare-d1-config.mjs";
@@ -12,15 +13,6 @@ const GITHUB_API_VERSION = "2026-03-10";
 const CLOUDFLARE_API_ORIGIN = "https://api.cloudflare.com";
 const REQUEST_TIMEOUT_MS = 10_000;
 const MAX_RESPONSE_BYTES = 1_000_000;
-
-function hasFlag(name) {
-  return process.argv.includes(name);
-}
-
-function readArg(prefix) {
-  const arg = process.argv.find((value) => value.startsWith(prefix + "="));
-  return arg ? arg.slice(prefix.length + 1) : null;
-}
 
 function githubHeaders() {
   const token = process.env.GITHUB_TOKEN?.trim();
@@ -61,7 +53,7 @@ function parseLastPage(linkHeader) {
     if (!match) return null;
 
     const page = Number(new URL(match[1]).searchParams.get("page"));
-    if (Number.isInteger(page) && page >= 0) return page;
+    if (Number.isSafeInteger(page) && page >= 0) return page;
   }
 
   return null;
@@ -69,7 +61,7 @@ function parseLastPage(linkHeader) {
 
 async function fetchContributorCount(repository) {
   const response = await fetch(
-    GITHUB_API_ORIGIN + "/repos/" + repository + "/contributors?per_page=1&anon=false",
+    GITHUB_API_ORIGIN + repositoryApiPath(repository) + "/contributors?per_page=1&anon=false",
     {
       headers: githubHeaders(),
       redirect: "error",
@@ -87,18 +79,38 @@ async function fetchContributorCount(repository) {
 }
 
 function assertRepositoryPayload(payload, expectedRepository) {
+  let htmlUrl;
+
+  try {
+    htmlUrl = new URL(payload?.html_url);
+  } catch {
+    throw new Error("GitHub devolvió una URL de repositorio inválida.");
+  }
+
+  const expectedPath = "/" + expectedRepository.toLowerCase();
+  const actualPath = htmlUrl.pathname.replace(/\/+$/, "").toLowerCase();
+
   if (
     !payload ||
-    !Number.isInteger(payload.id) ||
+    !Number.isSafeInteger(payload.id) ||
     payload.id <= 0 ||
-    payload.full_name !== expectedRepository ||
-    typeof payload.html_url !== "string" ||
-    new URL(payload.html_url).hostname !== "github.com" ||
-    !Number.isInteger(payload.stargazers_count) ||
+    typeof payload.full_name !== "string" ||
+    payload.full_name.toLowerCase() !== expectedRepository.toLowerCase() ||
+    payload.private !== false ||
+    payload.visibility !== "public" ||
+    htmlUrl.protocol !== "https:" ||
+    htmlUrl.hostname !== "github.com" ||
+    htmlUrl.username ||
+    htmlUrl.password ||
+    htmlUrl.port ||
+    htmlUrl.search ||
+    htmlUrl.hash ||
+    actualPath !== expectedPath ||
+    !Number.isSafeInteger(payload.stargazers_count) ||
     payload.stargazers_count < 0 ||
-    !Number.isInteger(payload.forks_count) ||
+    !Number.isSafeInteger(payload.forks_count) ||
     payload.forks_count < 0 ||
-    !Number.isInteger(payload.open_issues_count) ||
+    !Number.isSafeInteger(payload.open_issues_count) ||
     payload.open_issues_count < 0 ||
     typeof payload.updated_at !== "string"
   ) {
@@ -108,7 +120,7 @@ function assertRepositoryPayload(payload, expectedRepository) {
 
 async function fetchRepositoryObservation(repository) {
   const [repoResponse, contributorCount] = await Promise.all([
-    fetch(GITHUB_API_ORIGIN + "/repos/" + repository, {
+    fetch(GITHUB_API_ORIGIN + repositoryApiPath(repository), {
       headers: githubHeaders(),
       redirect: "error",
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
@@ -187,11 +199,7 @@ async function persistToD1(batch) {
 const configPath = resolve(process.cwd(), "config", "github-repositories.json");
 const config = JSON.parse(await readFile(configPath, "utf8"));
 const repositories = validateRepositoryConfig(config);
-
-const explicitAt = readArg("--at");
-const observedAt = explicitAt
-  ? new Date(explicitAt).toISOString()
-  : floorToSnapshotBucket(new Date());
+const runOptions = resolveSnapshotRunOptions(process.argv.slice(2));
 
 const settled = await Promise.allSettled(
   repositories.map((repository) => fetchRepositoryObservation(repository)),
@@ -206,16 +214,15 @@ if (observations.length === 0) {
   throw new Error("No se obtuvo ninguna observación GitHub.");
 }
 
-const runKind = hasFlag("--backfill") ? "backfill" : hasFlag("--manual") ? "manual" : "scheduled";
 const persistence = buildSnapshotPersistenceBatch({
-  observedAt,
+  observedAt: runOptions.observedAt,
   observations,
   failures,
-  runKind,
+  runKind: runOptions.runKind,
 });
 
 const summary = {
-  observedAt,
+  observedAt: runOptions.observedAt,
   runId: persistence.runId,
   status: persistence.status,
   repositoriesRequested: repositories.length,
@@ -230,7 +237,7 @@ const summary = {
   })),
 };
 
-if (hasFlag("--persist")) {
+if (runOptions.persist) {
   const d1 = await persistToD1(persistence.batch);
   console.log("[github-snapshot] PERSISTED", JSON.stringify({ ...summary, d1 }));
 } else {

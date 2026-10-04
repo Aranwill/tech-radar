@@ -4,11 +4,24 @@ import { DatabaseSync } from "node:sqlite";
 import {
   buildSnapshotPersistenceBatch,
   floorToSnapshotBucket,
+  repositoryApiPath,
+  resolveSnapshotRunOptions,
   validateRepositoryConfig,
+  validateRepositoryIdentifier,
 } from "./lib/github-snapshot-core.mjs";
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function expectThrow(fn, message) {
+  let threw = false;
+  try {
+    fn();
+  } catch {
+    threw = true;
+  }
+  assert(threw, message);
 }
 
 function applyBatch(db, batch) {
@@ -26,6 +39,50 @@ assert(repositories.length === 3, "El fixture curado esperado cambió sin actual
 assert(
   floorToSnapshotBucket("2026-09-29T23:59:59.999Z") === "2026-09-29T18:00:00.000Z",
   "El bucket UTC de 6h no es determinista.",
+);
+
+assert(
+  repositoryApiPath("example/project") === "/repos/example/project",
+  "El path GitHub normalizado cambió.",
+);
+expectThrow(
+  () => validateRepositoryIdentifier("../project"),
+  "Se aceptó un owner con dot-segment.",
+);
+expectThrow(
+  () => validateRepositoryIdentifier("owner/.."),
+  "Se aceptó un repo con dot-segment.",
+);
+expectThrow(
+  () => validateRepositoryConfig({ version: 1, repositories: ["a/b", "a/b"] }),
+  "Se aceptó un catálogo con repositorios duplicados.",
+);
+
+const manualPersist = resolveSnapshotRunOptions(
+  ["--manual", "--persist"],
+  new Date("2026-09-29T23:59:59.999Z"),
+);
+assert(manualPersist.persist === true, "Persist manual no preservado.");
+assert(manualPersist.runKind === "manual", "Persist manual quedó etiquetado como scheduled.");
+assert(
+  manualPersist.observedAt === "2026-09-29T18:00:00.000Z",
+  "Persist manual no usa el bucket UTC corriente.",
+);
+expectThrow(
+  () => resolveSnapshotRunOptions(["--backfill"], new Date("2026-09-29T18:00:00.000Z")),
+  "Backfill live quedó habilitado.",
+);
+expectThrow(
+  () => resolveSnapshotRunOptions(["--manual", "--persist", "--at=2026-09-29T18:00:00.000Z"]),
+  "--at persistente quedó habilitado.",
+);
+expectThrow(
+  () => resolveSnapshotRunOptions(["--manual", "--at=2026-09-29T19:00:00.000Z"]),
+  "Se aceptó un --at fuera del bucket UTC exacto.",
+);
+expectThrow(
+  () => resolveSnapshotRunOptions(["--manul"]),
+  "Un flag desconocido fue aceptado silenciosamente.",
 );
 
 const db = new DatabaseSync(":memory:");
@@ -53,6 +110,27 @@ try {
     language: "TypeScript",
     updatedAt: "2026-09-29T17:00:00.000Z",
   };
+
+  expectThrow(
+    () =>
+      buildSnapshotPersistenceBatch({
+        observedAt: "2026-09-29T19:00:00.000Z",
+        observations: [baseObservation],
+        failures: 0,
+        runKind: "manual",
+      }),
+    "Persistencia aceptó un observedAt fuera del bucket UTC exacto.",
+  );
+  expectThrow(
+    () =>
+      buildSnapshotPersistenceBatch({
+        observedAt: "2026-09-29T18:00:00.000Z",
+        observations: [{ ...baseObservation, htmlUrl: "http://github.com/example/project" }],
+        failures: 0,
+        runKind: "manual",
+      }),
+    "Persistencia aceptó una URL GitHub no HTTPS.",
+  );
 
   const firstAt = "2026-09-29T18:00:00.000Z";
   const first = buildSnapshotPersistenceBatch({
@@ -113,6 +191,9 @@ try {
       snapshotCount,
       rerunIdempotent: true,
       partialRunTracked: true,
+      productionSecretsScoped: true,
+      backfillLiveRejected: true,
+      exactBucketsEnforced: true,
     }),
   );
 } finally {
