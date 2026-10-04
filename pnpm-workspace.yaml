@@ -12,8 +12,15 @@ blockExoticSubdeps: true
 # Las nuevas dependencias directas se guardan con versión exacta.
 saveExact: true
 
-audit:
-  level: high
+# Backport de seguridad compatible para una transitiva fijada por Satori/OpenType.
+# El override se retira cuando los parents publiquen una versión que ya lo incluya.
+overrides:
+  fflate: 0.7.5
 
+audit:
+  level: moderate
+
+# Único script de instalación aprobado actualmente. Cualquier ampliación
+# requiere revisión explícita del paquete y de su necesidad.
 allowBuilds:
   workerd: true

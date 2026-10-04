@@ -3,7 +3,55 @@ import { createHash } from "node:crypto";
 export const GITHUB_SOURCE_ID = "source-github-rest";
 export const SNAPSHOT_BUCKET_HOURS = 6;
 
-const REPOSITORY_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+const REPOSITORY_SEGMENT_PATTERN = /^[A-Za-z0-9_.-]{1,100}$/;
+
+function parseIso(value, fieldName) {
+  if (typeof value !== "string" && !(value instanceof Date)) {
+    throw new Error(fieldName + " inválido.");
+  }
+
+  const date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(fieldName + " inválido.");
+  }
+
+  return date.toISOString();
+}
+
+function assertSafeNonNegativeInteger(value, fieldName) {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Error(fieldName + " debe ser un entero seguro no negativo.");
+  }
+}
+
+export function validateRepositoryIdentifier(repository) {
+  if (typeof repository !== "string") {
+    throw new Error("Repositorio curado inválido.");
+  }
+
+  const parts = repository.split("/");
+  if (parts.length !== 2) {
+    throw new Error("Repositorio curado inválido.");
+  }
+
+  for (const segment of parts) {
+    if (
+      !REPOSITORY_SEGMENT_PATTERN.test(segment) ||
+      segment === "." ||
+      segment === ".."
+    ) {
+      throw new Error("Repositorio curado inválido.");
+    }
+  }
+
+  return repository;
+}
+
+export function repositoryApiPath(repository) {
+  const validated = validateRepositoryIdentifier(repository);
+  const [owner, name] = validated.split("/");
+  return "/repos/" + encodeURIComponent(owner) + "/" + encodeURIComponent(name);
+}
 
 export function validateRepositoryConfig(value) {
   if (
@@ -16,12 +64,7 @@ export function validateRepositoryConfig(value) {
     throw new Error("Catálogo GitHub inválido.");
   }
 
-  const repositories = value.repositories.map((repository) => {
-    if (typeof repository !== "string" || !REPOSITORY_PATTERN.test(repository)) {
-      throw new Error("Repositorio curado inválido.");
-    }
-    return repository;
-  });
+  const repositories = value.repositories.map(validateRepositoryIdentifier);
 
   if (new Set(repositories).size !== repositories.length) {
     throw new Error("El catálogo GitHub contiene repositorios duplicados.");
@@ -46,6 +89,139 @@ export function floorToSnapshotBucket(value, bucketHours = SNAPSHOT_BUCKET_HOURS
   return date.toISOString();
 }
 
+export function resolveSnapshotRunOptions(args, now = new Date()) {
+  if (!Array.isArray(args)) {
+    throw new Error("Argumentos de snapshot inválidos.");
+  }
+
+  let runKind = null;
+  let persist = false;
+
+  for (const arg of args) {
+    if (arg === "--manual" || arg === "--scheduled") {
+      const nextRunKind = arg === "--manual" ? "manual" : "scheduled";
+      if (runKind !== null) {
+        throw new Error("El modo de ejecución no puede repetirse ni combinarse.");
+      }
+      runKind = nextRunKind;
+      continue;
+    }
+
+    if (arg === "--persist") {
+      if (persist) {
+        throw new Error("--persist no puede repetirse.");
+      }
+      persist = true;
+      continue;
+    }
+
+    if (arg === "--backfill" || arg.startsWith("--at=")) {
+      throw new Error(
+        "Backfill/timestamp override no habilitado: el collector live sólo observa el bucket UTC corriente.",
+      );
+    }
+
+    throw new Error("Argumento de snapshot no reconocido: " + arg);
+  }
+
+  if (runKind === null) {
+    throw new Error("Se requiere modo explícito --manual o --scheduled.");
+  }
+
+  if (runKind === "scheduled" && !persist) {
+    throw new Error("--scheduled requiere --persist.");
+  }
+
+  return Object.freeze({
+    observedAt: floorToSnapshotBucket(now),
+    runKind,
+    persist,
+  });
+}
+
+function validateExecutionId(value) {
+  if (
+    typeof value !== "string" ||
+    !/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$/.test(value)
+  ) {
+    throw new Error("executionId inválido.");
+  }
+  return value;
+}
+
+function validateSnapshotObservation(observation) {
+  if (!observation || typeof observation !== "object") {
+    throw new Error("Observación GitHub inválida.");
+  }
+
+  assertSafeNonNegativeInteger(observation.githubId, "githubId");
+  if (observation.githubId === 0) {
+    throw new Error("githubId debe ser positivo.");
+  }
+
+  const fullName = validateRepositoryIdentifier(observation.fullName);
+  const url = new URL(observation.htmlUrl);
+  const expectedPath = "/" + fullName.toLowerCase();
+  const actualPath = url.pathname.replace(/\/+$/, "").toLowerCase();
+
+  if (
+    url.protocol !== "https:" ||
+    url.hostname !== "github.com" ||
+    url.username ||
+    url.password ||
+    url.port ||
+    url.search ||
+    url.hash ||
+    actualPath !== expectedPath
+  ) {
+    throw new Error("URL canónica GitHub inválida.");
+  }
+
+  if (
+    observation.description !== null &&
+    observation.description !== undefined &&
+    (typeof observation.description !== "string" || observation.description.length > 500)
+  ) {
+    throw new Error("Descripción GitHub inválida.");
+  }
+
+  if (
+    observation.language !== null &&
+    observation.language !== undefined &&
+    (typeof observation.language !== "string" || observation.language.length > 80)
+  ) {
+    throw new Error("Lenguaje GitHub inválido.");
+  }
+
+  assertSafeNonNegativeInteger(observation.stars, "stars");
+  assertSafeNonNegativeInteger(observation.forks, "forks");
+  assertSafeNonNegativeInteger(
+    observation.openIssuesAndPullRequests,
+    "openIssuesAndPullRequests",
+  );
+
+  if (
+    observation.contributorCount !== null &&
+    observation.contributorCount !== undefined
+  ) {
+    assertSafeNonNegativeInteger(observation.contributorCount, "contributorCount");
+  }
+
+  const updatedAt = observation.updatedAt === null || observation.updatedAt === undefined
+    ? null
+    : parseIso(observation.updatedAt, "updatedAt");
+
+  if (updatedAt !== null && updatedAt !== observation.updatedAt) {
+    throw new Error("updatedAt debe estar normalizado en UTC ISO-8601.");
+  }
+
+  return {
+    ...observation,
+    fullName,
+    updatedAt,
+  };
+}
+
 export function hashRepositoryContent(observation) {
   const stable = JSON.stringify({
     fullName: observation.fullName,
@@ -62,24 +238,49 @@ export function buildSnapshotPersistenceBatch({
   observedAt,
   observations,
   failures = 0,
-  runKind = "scheduled",
+  runKind,
+  executionId,
+  startedAt,
+  finishedAt,
 }) {
   if (!Array.isArray(observations) || observations.length === 0) {
     throw new Error("Se requiere al menos una observación para persistir.");
   }
 
-  if (!["scheduled", "manual", "backfill"].includes(runKind)) {
+  if (!["scheduled", "manual"].includes(runKind)) {
     throw new Error("runKind inválido.");
+  }
+
+  const normalizedExecutionId = validateExecutionId(executionId);
+  const normalizedStartedAt = parseIso(startedAt, "startedAt");
+  const normalizedFinishedAt = parseIso(finishedAt, "finishedAt");
+  if (normalizedFinishedAt < normalizedStartedAt) {
+    throw new Error("finishedAt no puede ser anterior a startedAt.");
   }
 
   if (!Number.isInteger(failures) || failures < 0) {
     throw new Error("Cantidad de fallos inválida.");
   }
 
-  const normalizedObservedAt = new Date(observedAt).toISOString();
-  const runId = "github-snapshot:" + normalizedObservedAt;
+  const normalizedObservedAt = parseIso(observedAt, "observedAt");
+  if (normalizedObservedAt !== floorToSnapshotBucket(normalizedObservedAt)) {
+    throw new Error("observedAt debe coincidir exactamente con un bucket UTC de 6h.");
+  }
+
+  const normalizedObservations = observations.map(validateSnapshotObservation);
+  const itemIds = new Set();
+  for (const observation of normalizedObservations) {
+    const itemId = "github-" + observation.githubId;
+    if (itemIds.has(itemId)) {
+      throw new Error("Observaciones GitHub duplicadas para el mismo item.");
+    }
+    itemIds.add(itemId);
+  }
+
+  const runId =
+    "github-snapshot:" + normalizedObservedAt + ":" + normalizedExecutionId;
   const status = failures === 0 ? "succeeded" : "partial";
-  const totalSeen = observations.length + failures;
+  const totalSeen = normalizedObservations.length + failures;
 
   const batch = [
     {
@@ -105,11 +306,11 @@ export function buildSnapshotPersistenceBatch({
         items_written = 0,
         items_failed = 0,
         error_code = NULL`,
-      params: [runId, GITHUB_SOURCE_ID, runKind, normalizedObservedAt],
+      params: [runId, GITHUB_SOURCE_ID, runKind, normalizedStartedAt],
     },
   ];
 
-  for (const observation of observations) {
+  for (const observation of normalizedObservations) {
     const itemId = "github-" + observation.githubId;
     const contentHash = hashRepositoryContent(observation);
 
@@ -174,9 +375,9 @@ export function buildSnapshotPersistenceBatch({
       WHERE id = ?`,
     params: [
       status,
-      normalizedObservedAt,
+      normalizedFinishedAt,
       totalSeen,
-      observations.length,
+      normalizedObservations.length,
       failures,
       failures > 0 ? "upstream_partial_failure" : null,
       runId,

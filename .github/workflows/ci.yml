@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 12
 
     steps:
@@ -62,5 +62,24 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Audit production dependencies
-        run: pnpm audit --prod --audit-level=high
+      - name: Audit dependency supply chain
+        shell: bash
+        run: |
+          set +e
+
+          echo "::group::Runtime dependencies · moderate+"
+          pnpm audit --prod --audit-level=moderate
+          runtime_status=$?
+          echo "::endgroup::"
+
+          echo "::group::Full dependency tree · high+"
+          pnpm audit --audit-level=high
+          full_status=$?
+          echo "::endgroup::"
+
+          set -e
+
+          if [[ "$runtime_status" -ne 0 || "$full_status" -ne 0 ]]; then
+            echo "::error::Dependency audit failed. No advisory is ignored automatically."
+            exit 1
+          fi

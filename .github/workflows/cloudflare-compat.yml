@@ -4,13 +4,15 @@ on:
   pull_request:
     paths:
       - ".github/workflows/cloudflare-compat.yml"
+      - "cloudflare.config.ts"
       - "docs/CLOUDFLARE_COMPATIBILITY_PREFLIGHT.md"
+      - "next.config.ts"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
-      - "next.config.ts"
-      - "tsconfig.json"
       - "postcss.config.mjs"
+      - "tsconfig.json"
+      - "vite.config.ts"
       - "src/**"
       - "public/**"
 
@@ -23,8 +25,8 @@ concurrency:
 
 jobs:
   vinext-check:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
 
     steps:
       - name: Checkout
@@ -51,12 +53,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          pnpm dlx vinext@1.0.1 check 2>&1 | tee vinext-check.txt
+          pnpm exec vinext check 2>&1 | tee vinext-check.txt
 
           {
             printf '%s\n' '## Cloudflare / vinext compatibility preflight'
             printf '\n'
-            printf '%s\n' '`vinext check` pinned to 1.0.1 for this evidence run.'
+            printf '%s\n' '`vinext check` executed from the lockfile-installed project dependency.'
             printf '\n'
             printf '%s\n' '```text'
             cat vinext-check.txt
@@ -65,5 +67,58 @@ jobs:
 
           if grep -q "✗" vinext-check.txt; then
             echo "::error::vinext check reported one or more compatibility issues."
+            exit 1
+          fi
+
+      - name: Build vinext Worker
+        run: pnpm build:vinext
+
+      - name: Smoke-test runtime security headers
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          pnpm exec vite preview --host 127.0.0.1 --port 4173 --strictPort > vinext-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
+
+          ready=false
+          for _ in {1..30}; do
+            if curl --silent --show-error --fail               --dump-header response-headers.txt               --output /dev/null               http://127.0.0.1:4173/; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+
+          if [[ "$ready" != "true" ]]; then
+            cat vinext-preview.log
+            echo "::error::vinext preview did not become ready."
+            exit 1
+          fi
+
+          for header in             "content-security-policy"             "referrer-policy"             "x-content-type-options"             "permissions-policy"             "cross-origin-opener-policy"; do
+            if ! grep -qi "^$header:" response-headers.txt; then
+              cat response-headers.txt
+              echo "::error::Missing runtime security header: $header"
+              exit 1
+            fi
+          done
+
+          if grep -qi "^x-powered-by:" response-headers.txt; then
+            cat response-headers.txt
+            echo "::error::X-Powered-By must not be exposed."
+            exit 1
+          fi
+
+          if ! grep -qi "permissions-policy:.*geolocation=()" response-headers.txt; then
+            cat response-headers.txt
+            echo "::error::Geolocation must remain disabled until an explicit feature gate exists."
+            exit 1
+          fi
+
+          if ! grep -qi "content-security-policy:.*connect-src 'self'" response-headers.txt; then
+            cat response-headers.txt
+            echo "::error::Production connect-src must default to self only."
             exit 1
           fi
