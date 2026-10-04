@@ -21,20 +21,32 @@
     "history:validate": "node scripts/validate-github-history.mjs",
     "d1:verify": "node scripts/verify-d1-remote.mjs",
     "d1:verify:syntax": "node --check scripts/verify-d1-remote.mjs",
-    "d1:config:validate": "node scripts/validate-d1-runtime-config.mjs"
+    "d1:config:validate": "node scripts/validate-d1-runtime-config.mjs",
+    "dev:vinext": "vite dev --port 3001",
+    "build:vinext": "vite build",
+    "start:vinext": "vite preview",
+    "deploy:vinext": "vinext-cloudflare deploy"
   },
   "dependencies": {
+    "@vinext/cloudflare": "1.0.1",
     "next": "16.3.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-server-dom-webpack": "19.3.0",
+    "vinext": "1.0.1",
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "2.0.0-beta.sha-52b0dc0e9",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "24.10.1",
     "@types/react": "19.2.9",
     "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.1.1",
+    "@vitejs/plugin-rsc": "0.5.35",
+    "cf": "1.0.0-beta.12",
     "tailwindcss": "4.3.3",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "vite": "8.3.0"
   }
 }
