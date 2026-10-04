@@ -4,7 +4,8 @@
 
 Preflight de compatibilidad previo a cualquier migración o despliegue real.
 
-Fecha de baseline: **2026-09-29**.
+Fecha de baseline original: **2026-09-29**.  
+Refreshes de evidencia: **2026-09-30** y candidate actual **2026-10-04**.
 
 ## Por qué existe
 
@@ -53,19 +54,61 @@ El único soporte parcial restante es `reactStrictMode` en App Router. El CI gen
 
 Resultado del gate actual: **PASS con una diferencia parcial conocida y documentada; sin incompatibilidades bloqueantes.**
 
-## Corrección acotada
+## Tercera medición — vinext 1.0.0
 
-Esta rama agrega únicamente:
+El refresh del 2026-09-30 contra `vinext@1.0.0` produjo:
 
-```json
-"type": "module"
+```text
+Overall: 94% compatible
+Config: 2/3 options supported
+Libraries: 2/2 compatible
+App Router: compatible
+1 page: detected
+1 layout: detected
+1 route handler: detected
+8 supported
+1 partial
+0 issues
 ```
 
-a `package.json`.
+No aparecieron incompatibilidades nuevas respecto de la segunda medición. El único soporte parcial continúa siendo `reactStrictMode` en App Router.
 
-No requiere cambio de lockfile ni incorpora vinext como dependencia. Los archivos de configuración existentes ya son compatibles con ESM (`.mjs`, `.ts` y scripts `.mjs`).
+Resultado del refresh: **PASS; 0 issues bloqueantes.**
 
-La corrección sólo se acepta si el CI Next.js existente sigue PASS y el preflight deja de reportar issues bloqueantes.
+## Cuarta medición — vinext 1.0.1 (candidate 2026-10-04)
+
+Upstream publicó `vinext@1.0.1` el 2026-10-01. Al preparar este candidate ya supera la ventana mínima de 24 horas definida por `minimumReleaseAge: 1440`.
+
+La release contiene correcciones relevantes para el camino que Dalil evalúa, entre ellas fixes en Cloudflare, App Router, Router, Build, Cache, NextRequest y middleware. Esto justifica refrescar la sonda antes de decidir una migración real, pero **no autoriza por sí solo a adoptar el runtime**.
+
+Este candidate cambia únicamente la sonda reproducible:
+
+```bash
+pnpm dlx vinext@1.0.1 check
+```
+
+El resultado terminal de esta cuarta medición queda ligado al CI del candidate exacto de la PR. La PR sólo podrá aceptarse si el workflow general y el preflight de compatibilidad terminan PASS y el reporte no contiene incompatibilidades marcadas con `✗`.
+
+Referencia release:
+- https://github.com/cloudflare/vinext/releases/tag/vinext%401.0.1
+
+## Corrección acotada original
+
+La baseline del 2026-09-29 agregó únicamente `"type": "module"` a `package.json`. Ese cambio ya está integrado en `main` y resolvió el issue ESM observado.
+
+## Refreshes versionados
+
+El refresh del 2026-09-30 cambió la sonda de `vinext@1.0.0-beta.9` a `vinext@1.0.0` y produjo la tercera medición documentada.
+
+El candidate actual del 2026-10-04 refresca exclusivamente:
+
+- el pin de la sonda de compatibilidad: `vinext@1.0.0 → vinext@1.0.1`;
+- la documentación de evidencia;
+- la base Git de la PR para quedar nuevamente construida sobre el `main` actual después de D1 Bootstrap V1.
+
+No modifica `package.json`, `pnpm-lock.yaml`, código de aplicación, D1, credenciales ni configuración de proveedor. Tampoco incorpora vinext como dependencia.
+
+El refresh sólo se acepta si el CI Next.js existente sigue PASS y el nuevo preflight no reporta issues bloqueantes.
 
 ## Regla de adopción
 
@@ -74,12 +117,17 @@ Este preflight **no instala vinext en el proyecto** y no cambia el lockfile.
 Sólo ejecuta:
 
 ```bash
-pnpm dlx vinext@1.0.0-beta.9 check
+pnpm dlx vinext@1.0.1 check
 ```
 
 La versión se fija deliberadamente para que el resultado sea reproducible.
 
-La versión más reciente observada al crear esta baseline era más nueva que la ventana de enfriamiento de dependencias del proyecto. Dalil mantiene `minimumReleaseAge: 1440`, por lo que no debe adoptar una publicación recién liberada sólo por ser la más reciente.
+La baseline original utilizó una beta fijada. Upstream publicó `vinext@1.0.0` el 2026-09-28 y `vinext@1.0.1` el 2026-10-01. El candidate actual usa 1.0.1 porque ya supera la ventana mínima de 24 horas definida por `minimumReleaseAge: 1440`.
+
+Este refresh **no adopta vinext como dependencia**: únicamente actualiza la sonda reproducible de compatibilidad ejecutada con `pnpm dlx`. La guía de Cloudflare consultada sigue recomendando ejecutar `vinext check` antes de `vinext init`; cualquier diferencia temporal entre esa documentación y los releases upstream se conserva como evidencia y no se interpreta como autorización automática para migrar.
+
+Referencia candidate:
+- https://github.com/cloudflare/vinext/releases/tag/vinext%401.0.1
 
 Antes de una migración real se debe volver a comprobar:
 
@@ -125,7 +173,7 @@ Si el preflight falla, el fallo se trata como evidencia y se investiga antes de 
 
 ## Siguiente paso controlado
 
-Después de aprobar este gate, la siguiente rama deberá ejecutar en un entorno controlado una inicialización no destructiva de Cloudflare/vinext, revisar todos los archivos generados y validar ambos caminos:
+Después de aprobar este gate, la siguiente rama podrá preparar una inicialización no destructiva de Cloudflare/vinext, revisar todos los archivos generados y validar ambos caminos. La ejecución que requiera autenticación, Account ID, tokens, bindings o recursos reales permanece reservada para la workstation personal autorizada:
 
 ```text
 Next.js actual
