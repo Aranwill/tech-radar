@@ -81,7 +81,7 @@ a {
 }
 
 .shell {
-  width: min(1180px, calc(100% - 2rem));
+  width: min(1680px, calc(100% - 3rem));
   margin: 0 auto;
   padding: 2rem 0 4rem;
 }
@@ -769,7 +769,7 @@ h1 {
 
 @media (max-width: 540px) {
   .shell {
-    width: min(100% - 1.1rem, 1180px);
+    width: calc(100% - 1.1rem);
     padding-top: 0.7rem;
   }
 
