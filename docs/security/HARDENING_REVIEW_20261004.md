@@ -78,13 +78,20 @@ No se añade ignore, no se reduce el audit y no se debe promover #35 mientras el
 
 La reachability observada corresponde al toolchain de glob/build, no a una ruta HTTP de DALIL. Esto reduce exposición de runtime pero no elimina el riesgo de supply chain/build.
 
-### DALIL-SC-02 — advisory moderada pendiente de identificación exacta
+### DALIL-SC-02 — fflate / GHSA-px8p-9vwx-vf98
 
-**Estado:** OPEN.
+**Estado:** MITIGATION CANDIDATE.
 
-El audit reportó además una vulnerabilidad moderada. CI ahora ejecuta el audit de dependencias runtime con umbral `moderate` para dejar visible el paquete/advisory exacto.
+CI identificó `fflate@0.7.3`: `unzipSync` puede entrar en loop infinito ante ZIP64 malformado. La advisory afecta `>=0.7.0 <0.7.5` y publica `0.7.5` como versión corregida.
 
-No se cerrará por inferencia.
+DALIL fuerza temporalmente `fflate: 0.7.5` mediante un override exacto de pnpm. El cierre requiere evidencia de:
+
+- `pnpm install --frozen-lockfile` PASS;
+- typecheck/build Next PASS;
+- build/runtime vinext PASS;
+- audit sin GHSA-px8p-9vwx-vf98.
+
+No se usa una excepción de audit.
 
 ### DALIL-DATA-01 — ingestion_runs no es append-only por ejecución
 

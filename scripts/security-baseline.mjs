@@ -194,6 +194,7 @@ for (const required of [
   "minimumReleaseAge: 1440",
   "blockExoticSubdeps: true",
   "saveExact: true",
+  "fflate: 0.7.5",
   "level: moderate",
   "workerd: true",
 ]) {
