@@ -33,7 +33,8 @@ Endurecer DALIL antes de ampliar fuentes, endpoints, D1 runtime o capacidades de
 | DALIL-SEC-15 | LOW-MEDIUM | CLOSED-IN-CODE | Security baseline amplía cobertura a scripts/config/workflows e invariantes. |
 | DALIL-SEC-16 | INTEGRITY | CLOSED-IN-CODE | `fetchedAt` se reemplaza por `servedAt` para no afirmar frescura que puede provenir de caché. |
 | DALIL-SEC-17 | PLATFORM | PENDING-CONFIG | No hay Repository Rulesets visibles. Branch Protection requiere verificación manual por permisos. |
-| DALIL-SEC-18 | MODERATE | PENDING-LOCKFILE | `fflate@0.7.3` es vulnerable; existe fix en `0.7.5`. Requiere actualización controlada del lockfile. |
+| DALIL-SEC-18 | MODERATE | PENDING-LOCKFILE | `fflate@0.7.3` es vulnerable; existe fix en `0.7.5`. Sus padres lo fijan a 0.7.3, por lo que requiere override + lockfile controlado. |
+| DALIL-SEC-19 | MEDIUM | PENDING-DEPLOY-CONFIG | `/api/github/repositories` es público. Catálogo/caché/concurrencia reducen consumo, pero el deploy estable requiere rate limiting distribuido. |
 
 ## Supply chain pendiente
 
@@ -62,7 +63,7 @@ Cadena observada por vinext / `@vercel/og` / satori.
 - patched: `>=0.7.5`
 - advisory: `GHSA-px8p-9vwx-vf98`
 
-La actualización de lockfile queda diferida a una sesión controlada con pnpm y validación completa.
+Satori 0.33.5 y `@shuding/opentype.js@1.4.0-beta.0` fijan exactamente `fflate: 0.7.3`, por lo que un update transitivo ordinario no alcanza. La sesión controlada debe aplicar un override exacto a `0.7.5`, regenerar el lockfile y ejecutar la validación completa.
 
 ## Invariantes nuevos
 
@@ -89,7 +90,8 @@ Cuando el propietario vuelva a su PC personal:
 6. `pnpm build:vinext`;
 7. `pnpm start:vinext` y parity E2E;
 8. revisión de Rulesets / Branch Protection;
-9. recién después, cualquier deploy o configuración de D1 runtime.
+9. configurar/verificar rate limiting distribuido para endpoints públicos antes del deploy estable;
+10. recién después, cualquier deploy o configuración de D1 runtime.
 
 ## Fuera de alcance
 
