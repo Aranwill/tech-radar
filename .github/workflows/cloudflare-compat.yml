@@ -9,6 +9,8 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "next.config.ts"
+      - "cloudflare.config.ts"
+      - "vite.config.ts"
       - "tsconfig.json"
       - "postcss.config.mjs"
       - "src/**"
@@ -51,12 +53,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          pnpm dlx vinext@1.0.1 check 2>&1 | tee vinext-check.txt
+          pnpm exec vinext check 2>&1 | tee vinext-check.txt
 
           {
             printf '%s\n' '## Cloudflare / vinext compatibility preflight'
             printf '\n'
-            printf '%s\n' '`vinext check` pinned to 1.0.1 for this evidence run.'
+            printf '%s\n' '`vinext check` uses the project-pinned vinext 1.0.1 resolved by the frozen lockfile.'
             printf '\n'
             printf '%s\n' '```text'
             cat vinext-check.txt
