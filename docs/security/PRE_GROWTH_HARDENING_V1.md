@@ -35,6 +35,10 @@ Endurecer DALIL antes de ampliar fuentes, endpoints, D1 runtime o capacidades de
 | DALIL-SEC-17 | PLATFORM | PENDING-CONFIG | No hay Repository Rulesets visibles. Branch Protection requiere verificación manual por permisos. |
 | DALIL-SEC-18 | MODERATE | PENDING-LOCKFILE | `fflate@0.7.3` es vulnerable; existe fix en `0.7.5`. Sus padres lo fijan a 0.7.3, por lo que requiere override + lockfile controlado. |
 | DALIL-SEC-19 | MEDIUM | PENDING-DEPLOY-CONFIG | `/api/github/repositories` es público. Catálogo/caché/concurrencia reducen consumo, pero el deploy estable requiere rate limiting distribuido. |
+| DALIL-SEC-20 | PLATFORM | PENDING-CONFIG | Dependency Review está implementado y fijado a SHA, pero GitHub Dependency Graph está deshabilitado en el repositorio. |
+| DALIL-SEC-21 | DEFENSE-IN-DEPTH | CLOSED-IN-CI | CodeQL JS/TS con `security-extended` se ejecuta dentro del CI y publicó SARIF correctamente. |
+| DALIL-SEC-22 | MEDIUM-LOW | DEFERRED-DESIGN | CSP de producción aún requiere `script-src 'unsafe-inline'`. Vinext soporta nonces, pero adoptarlos cambia semántica de render/cache y requiere un gate dedicado. |
+| DALIL-SEC-23 | INTEGRITY | CLOSED-IN-CODE | El core de snapshots valida identidad, canonical URL, métricas, timestamps, duplicados y conserva `run_kind=manual` en persistencia manual. |
 
 ## Supply chain pendiente
 
@@ -102,3 +106,38 @@ Cuando el propietario vuelva a su PC personal:
 - autenticación;
 - IA/LLM;
 - nuevas fuentes.
+
+## Resultado remoto de hardening
+
+Candidate remoto validado:
+
+```text
+3985914197cc322e7cc9723f6cca36e244edc001
+```
+
+PASS:
+
+- Cloudflare compatibility preflight;
+- supply-chain policy verification de pnpm;
+- security baseline ampliado, incluyendo secret scanning de alta confianza;
+- schema/config D1;
+- snapshot pipeline con boundary negativo e idempotencia;
+- History core;
+- bounded JSON streaming;
+- TypeScript;
+- build Next.js;
+- build vinext;
+- runtime smoke real;
+- headers HTTP de seguridad;
+- rechazo de POST sobre la ruta GET-only;
+- ausencia de CORS abierto;
+- ausencia de `X-Powered-By`;
+- CodeQL `javascript-typescript` + `security-extended`;
+- upload SARIF de CodeQL.
+
+Bloqueos deliberados:
+
+- `pnpm audit --audit-level=moderate`: HIGH `braces@3.0.3` + MODERATE `fflate@0.7.3`;
+- Dependency Review: GitHub Dependency Graph deshabilitado en configuración del repositorio.
+
+No se aplicaron ignores, `warn-only` ni reducción del nivel de severidad.
