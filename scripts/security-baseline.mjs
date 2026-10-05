@@ -117,12 +117,45 @@ const tracked = execFileSync("git", ["ls-files"], { cwd: root, encoding: "utf8" 
   .split(/\r?\n/)
   .filter(Boolean);
 
+const secretPatterns = [
+  ["private key", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/],
+  ["GitHub token", /\b(?:gh[pousr]_[A-Za-z0-9]{36,255}|github_pat_[A-Za-z0-9_]{82,255})\b/],
+  ["AWS access key", /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/],
+  ["Slack token", /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/],
+  ["Google API key", /\bAIza[0-9A-Za-z_-]{35}\b/],
+  ["Bearer token literal", /\bBearer\s+[A-Za-z0-9._~-]{24,}\b/],
+];
+
+const textLikeFile = /\.(?:c?js|mjs|jsx|ts|tsx|json|ya?ml|md|sql|css|html|txt|toml|ini|conf|properties)$/i;
+
 for (const path of tracked) {
   if (/^(?:.*\/)?\.env(?:\..+)?$/.test(path) && !path.endsWith(".env.example")) {
     fail(path + ": archivo de entorno real versionado");
   }
   if (/\.(?:pem|key|p12|pfx)$/i.test(path)) {
     fail(path + ": material criptográfico privado potencialmente versionado");
+  }
+  if (/(?:^|\/)\.dev\.vars(?:\..+)?$/.test(path)) {
+    fail(path + ": archivo .dev.vars real versionado");
+  }
+
+  if (textLikeFile.test(path)) {
+    const absolutePath = join(root, path);
+    const stat = statSync(absolutePath);
+    if (stat.size <= 2_000_000) {
+      const content = readFileSync(absolutePath, "utf8");
+      for (const [label, pattern] of secretPatterns) {
+        if (pattern.test(content)) {
+          fail(path + ": posible secreto de alta confianza detectado (" + label + ")");
+        }
+      }
+
+      if (
+        /_authToken\s*=\s*(?!\$\{|\$[A-Z_])[A-Za-z0-9._~-]{16,}/.test(content)
+      ) {
+        fail(path + ": token npm literal detectado");
+      }
+    }
   }
 }
 
