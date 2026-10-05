@@ -24,7 +24,7 @@
     "d1:config:validate": "node scripts/validate-d1-runtime-config.mjs"
   },
   "dependencies": {
-    "next": "16.3.6",
+    "next": "16.3.8",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "4.6.5"
