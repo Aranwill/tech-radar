@@ -28,6 +28,30 @@ assert(
   "El bucket UTC de 6h no es determinista.",
 );
 
+let unalignedBucketRejected = false;
+try {
+  buildSnapshotPersistenceBatch({
+    observedAt: "2026-09-29T18:01:00.000Z",
+    observations: [{
+      githubId: 999,
+      fullName: "example/unaligned",
+      description: null,
+      htmlUrl: "https://github.com/example/unaligned",
+      stars: 1,
+      forks: 0,
+      openIssuesAndPullRequests: 0,
+      contributorCount: null,
+      language: null,
+      updatedAt: "2026-09-29T18:00:00.000Z",
+    }],
+    failures: 0,
+    runKind: "manual",
+  });
+} catch {
+  unalignedBucketRejected = true;
+}
+assert(unalignedBucketRejected, "Un observedAt fuera del bucket UTC fue aceptado.");
+
 const db = new DatabaseSync(":memory:");
 
 try {
@@ -113,6 +137,7 @@ try {
       snapshotCount,
       rerunIdempotent: true,
       partialRunTracked: true,
+      unalignedBucketRejected: true,
     }),
   );
 } finally {
