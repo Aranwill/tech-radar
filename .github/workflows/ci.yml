@@ -56,6 +56,9 @@ jobs:
       - name: Validate GitHub history
         run: pnpm history:validate
 
+      - name: Validate bounded external JSON
+        run: pnpm http:bounded-json:validate
+
       - name: Typecheck
         run: pnpm typecheck
 
