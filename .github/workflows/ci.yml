@@ -97,11 +97,37 @@ jobs:
           grep -qi '^content-security-policy:' /tmp/dalil-headers.txt
           grep -qi '^x-content-type-options: nosniff' /tmp/dalil-headers.txt
           grep -qi '^permissions-policy:.*geolocation=()' /tmp/dalil-headers.txt
+          grep -qi '^cross-origin-opener-policy: same-origin' /tmp/dalil-headers.txt
+          grep -qi '^cross-origin-resource-policy: same-origin' /tmp/dalil-headers.txt
+          grep -qi '^x-frame-options: DENY' /tmp/dalil-headers.txt
+          if grep -qi '^x-powered-by:' /tmp/dalil-headers.txt; then
+            echo "::error::X-Powered-By must remain disabled."
+            exit 1
+          fi
+          if grep -qi '^access-control-allow-origin:' /tmp/dalil-headers.txt; then
+            echo "::error::Unexpected CORS header on root route."
+            exit 1
+          fi
 
-          curl --fail --silent --show-error \
+          curl --fail --silent --show-error --dump-header /tmp/dalil-api-headers.txt \
             --header 'Accept: application/json' \
             http://127.0.0.1:4173/api/github/repositories \
             --output /tmp/dalil-github.json
+
+          grep -qi '^content-type: application/json' /tmp/dalil-api-headers.txt
+          grep -qi '^cache-control: public,' /tmp/dalil-api-headers.txt
+          grep -qi '^x-content-type-options: nosniff' /tmp/dalil-api-headers.txt
+          if grep -qi '^access-control-allow-origin:' /tmp/dalil-api-headers.txt; then
+            echo "::error::Unexpected CORS header on GitHub API route."
+            exit 1
+          fi
+
+          post_status="$(curl --silent --output /tmp/dalil-post.json --write-out '%{http_code}' \
+            --request POST http://127.0.0.1:4173/api/github/repositories)"
+          if [[ "$post_status" != "405" ]]; then
+            echo "::error::POST /api/github/repositories returned $post_status instead of 405."
+            exit 1
+          fi
 
           node --input-type=module - <<'NODE'
           import { readFileSync } from "node:fs";
