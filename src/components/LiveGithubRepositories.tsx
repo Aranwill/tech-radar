@@ -9,7 +9,7 @@ import {
 
 type LoadState =
   | { status: "loading" }
-  | { status: "ready"; data: GithubApiResponse }
+  | { status: "ready"; data: GithubRepositoriesApiResponse }
   | { status: "error" };
 
 export function LiveGithubRepositories() {
