@@ -161,7 +161,40 @@ Vinext tiene soporte explícito de nonce CSP, pero la migración a nonce por req
 
 No mezclarla con el cierre de supply chain.
 
-## 11. Deploy gate
+## 11. Cloudflare Operations
+
+Antes del primer deploy estable, ejecutar el plan:
+
+`docs/security/CLOUDFLARE_OPERATIONS_HARDENING_V1.md`
+
+Pendientes mínimos:
+
+- verificar límites reales del plan activo;
+- configurar rate limiting de `/api/github/repositories`;
+- validar requests/period + mitigation timeout;
+- activar Workers Observability / Logs;
+- crear dashboard `DALIL — Operations`;
+- crear dashboard `DALIL — Security` si aporta valor;
+- configurar alertas Email;
+- evaluar Webhook;
+- activar DDoS / SSL / billing notifications disponibles;
+- configurar Custom Alerts para 5xx, Worker errors, 429, WAF blocks y anomalías si el dataset lo permite;
+- ejecutar prueba controlada del límite;
+- documentar rollback.
+
+Baseline propuesto para la primera regla Free:
+
+```text
+Path: /api/github/repositories
+Characteristic: IP
+Threshold: 20 requests / 10 seconds / IP
+Action: Block
+Mitigation timeout: 10 seconds
+```
+
+El valor debe validarse con tráfico real antes de considerarlo permanente.
+
+## 12. Deploy gate
 
 Antes del primer deploy estable:
 
