@@ -59,8 +59,11 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Build
+      - name: Build Next.js baseline
         run: pnpm build
 
-      - name: Audit production dependencies
-        run: pnpm audit --prod --audit-level=high
+      - name: Build Cloudflare / vinext runtime
+        run: pnpm build:vinext
+
+      - name: Audit dependency graph
+        run: pnpm audit --audit-level=moderate
