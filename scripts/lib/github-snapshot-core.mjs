@@ -23,7 +23,8 @@ export function validateRepositoryConfig(value) {
     return repository;
   });
 
-  if (new Set(repositories).size !== repositories.length) {
+  const normalizedRepositories = repositories.map((repository) => repository.toLowerCase());
+  if (new Set(normalizedRepositories).size !== repositories.length) {
     throw new Error("El catálogo GitHub contiene repositorios duplicados.");
   }
 
