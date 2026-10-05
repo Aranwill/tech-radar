@@ -60,7 +60,7 @@ for (const file of codeFiles) {
   for (const match of content.matchAll(/target=["']_blank["']/g)) {
     const context = content.slice(match.index, match.index + 240);
     if (!/rel=["'][^"']*noopener[^"']*noreferrer[^"']*["']/.test(context)) {
-      fail(display + ": target=_blank sin rel="noopener noreferrer"");
+      fail(display + ': target=_blank sin rel="noopener noreferrer"');
     }
   }
 }
