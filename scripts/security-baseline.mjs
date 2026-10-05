@@ -111,6 +111,10 @@ if (existsSync(snapshotWorkflowPath)) {
   if (!snapshotWorkflow.includes("github.ref == 'refs/heads/main'")) {
     fail(".github/workflows/github-snapshots.yml: persistencia D1 no está ligada explícitamente a main");
   }
+
+  if (!snapshotWorkflow.includes("node scripts/github-snapshot.mjs --manual --persist")) {
+    fail(".github/workflows/github-snapshots.yml: persistencia manual no conserva run_kind=manual");
+  }
 }
 
 const tracked = execFileSync("git", ["ls-files"], { cwd: root, encoding: "utf8" })
