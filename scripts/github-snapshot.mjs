@@ -119,7 +119,10 @@ async function fetchRepositoryObservation(repository) {
     throw new Error("GitHub repository respondió " + repoResponse.status + ".");
   }
 
-  const payload = await parseBoundedJson(repoResponse);
+  const payload = await parseBoundedJson(repoResponse, {
+    maxBytes: MAX_RESPONSE_BYTES,
+    label: "GitHub",
+  });
   assertRepositoryPayload(payload, repository);
 
   return {
