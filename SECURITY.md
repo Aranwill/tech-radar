@@ -26,7 +26,9 @@ Ver docs/security/OWASP_BASELINE.md y docs/security/THREAT_MODEL.md.
 - UI estructurada mediante catálogo explícito de componentes.
 - No se permite HTML, JavaScript, componentes remotos ni eval provenientes de fuentes o modelos.
 - URLs externas del contrato de UI deben usar HTTPS y, cuando corresponda, allowlists de host.
-- Endpoints de ingestión usan allowlists, timeouts, límites de tamaño, validación de tipo de contenido y mitigación SSRF.
+- Endpoints de ingestión usan allowlists, timeouts, límites de tamaño aplicados durante streaming, validación de tipo de contenido y mitigación SSRF.
+- Redirecciones externas no se siguen automáticamente; cuando el runtime exige `manual`, el status y origin se validan antes de aceptar la respuesta.
+- Credenciales de escritura D1 en CI se limitan al step de persistencia y la persistencia remota se restringe a `main`.
 - Permisos de GitHub Actions mínimos por defecto.
 - Actions de terceros fijadas a commits inmutables.
 - Dependencias auditadas y actualizadas de manera controlada.
@@ -73,3 +75,7 @@ Cuando se incorpore IA:
 No abrir Issues públicas con detalles explotables de una vulnerabilidad.
 
 Usar GitHub Security Advisories / Private vulnerability reporting cuando esté habilitado para el repositorio. Si esa opción no estuviera disponible, contactar al propietario del repositorio de forma privada.
+
+## Hardening pre-crecimiento
+
+El relevamiento integral previo a ampliar fuentes y runtime está registrado en `docs/security/PRE_GROWTH_HARDENING_V1.md`. Findings abiertos de supply chain continúan siendo bloqueantes hasta cierre verificable.
