@@ -68,5 +68,61 @@ jobs:
       - name: Build Cloudflare / vinext runtime
         run: pnpm build:vinext
 
+      - name: Smoke test Cloudflare / vinext runtime
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          pnpm start:vinext -- --host 127.0.0.1 --port 4173 > /tmp/dalil-vinext.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:4173/ >/tmp/dalil-root.html; then
+              break
+            fi
+            if [[ "$attempt" -eq 30 ]]; then
+              cat /tmp/dalil-vinext.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+          curl --fail --silent --show-error --dump-header /tmp/dalil-headers.txt \
+            --output /tmp/dalil-root.html \
+            http://127.0.0.1:4173/
+
+          grep -qi '^content-security-policy:' /tmp/dalil-headers.txt
+          grep -qi '^x-content-type-options: nosniff' /tmp/dalil-headers.txt
+          grep -qi '^permissions-policy:.*geolocation=()' /tmp/dalil-headers.txt
+
+          curl --fail --silent --show-error \
+            --header 'Accept: application/json' \
+            http://127.0.0.1:4173/api/github/repositories \
+            --output /tmp/dalil-github.json
+
+          node --input-type=module - <<'NODE'
+          import { readFileSync } from "node:fs";
+
+          const payload = JSON.parse(readFileSync("/tmp/dalil-github.json", "utf8"));
+          const names = payload.repositories?.map((repository) => repository.name).sort();
+
+          const expected = [
+            "a2ui-project/a2ui",
+            "huggingface/transformers",
+            "modelcontextprotocol/ext-apps",
+          ].sort();
+
+          if (
+            JSON.stringify(names) !== JSON.stringify(expected) ||
+            typeof payload.partial !== "boolean" ||
+            typeof payload.servedAt !== "string"
+          ) {
+            throw new Error("Runtime GitHub API contract mismatch.");
+          }
+          NODE
+
       - name: Audit dependency graph
         run: pnpm audit --audit-level=moderate
