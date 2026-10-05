@@ -64,6 +64,13 @@ export const dashboardSchema = z.object({
   blocks: z.array(uiBlockSchema).max(50),
 });
 
+export const githubRepositoriesApiSchema = z.strictObject({
+  repositories: z.array(repositoryBlockSchema).min(1).max(50),
+  partial: z.boolean(),
+  servedAt: z.string().datetime(),
+});
+
 export type UiBlock = z.infer<typeof uiBlockSchema>;
 export type RepositoryBlock = z.infer<typeof repositoryBlockSchema>;
+export type GithubRepositoriesApiResponse = z.infer<typeof githubRepositoriesApiSchema>;
 export type DashboardModel = z.infer<typeof dashboardSchema>;
