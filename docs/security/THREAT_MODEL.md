@@ -33,7 +33,7 @@ Controles: lockfile, pnpm exacto, cooldown, subdependencias exóticas bloqueadas
 
 Una API o fuente puede devolver campos inesperados, payloads enormes o enlaces no permitidos.
 
-Controles: host/endpoint fijo, timeout, redirect bloqueado, content-type, límite de bytes, Zod, URLs HTTPS/host esperado y React escaping.
+Controles: host/endpoint fijo, timeout, redirecciones no seguidas automáticamente, origin HTTPS exacto, content-type, límite duro de bytes durante streaming, Zod, provenance del recurso solicitado y React escaping.
 
 ### XSS / UI injection
 
@@ -51,7 +51,7 @@ Estado actual: no existen URLs de fetch controladas por usuario; GitHub Source V
 
 Fuentes lentas o payloads grandes pueden consumir recursos.
 
-Controles actuales: timeout, respuesta máxima, caché y conjunto limitado de requests. Antes de búsqueda pública se requerirá rate limit y cuotas.
+Controles actuales: timeout, respuesta máxima aplicada durante streaming, caché, catálogo cerrado y concurrencia acotada por lotes. Antes de búsqueda pública se requerirá rate limit y cuotas.
 
 ### Errores y leakage
 
@@ -66,6 +66,7 @@ No se considera seguro conectar un LLM simplemente porque el input haya sido san
 ## Riesgos residuales conocidos
 
 - La CSP aún usa unsafe-inline para scripts/estilos necesarios por la Foundation de Next.js. Antes del despliegue estable se debe evaluar CSP basada en nonce/hash.
-- No existe todavía rate limiting distribuido porque no hay endpoints de búsqueda pública ni mutaciones.
+- No existe todavía rate limiting distribuido porque no hay endpoints de búsqueda pública ni mutaciones. La concurrencia server-side sí está acotada.
+- Existen advisories transitivas abiertas asociadas al toolchain vinext; se mantienen como gates bloqueantes hasta mitigación verificable.
 - No hay observabilidad/alerting externo configurado.
 - Private vulnerability reporting debe verificarse/habilitarse en GitHub antes de anunciar un canal de reporte confidencial.

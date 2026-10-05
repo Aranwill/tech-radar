@@ -5,6 +5,87 @@ export const SNAPSHOT_BUCKET_HOURS = 6;
 
 const REPOSITORY_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 
+
+function isCanonicalIsoUtc(value) {
+  if (typeof value !== "string") return false;
+  const date = new Date(value);
+  return !Number.isNaN(date.getTime()) && date.toISOString() === value;
+}
+
+function validateObservation(observation) {
+  if (!observation || typeof observation !== "object") {
+    throw new Error("Observación GitHub inválida.");
+  }
+
+  if (!Number.isInteger(observation.githubId) || observation.githubId <= 0) {
+    throw new Error("githubId inválido.");
+  }
+
+  if (typeof observation.fullName !== "string" || !REPOSITORY_PATTERN.test(observation.fullName)) {
+    throw new Error("fullName GitHub inválido.");
+  }
+
+  let htmlUrl;
+  try {
+    htmlUrl = new URL(observation.htmlUrl);
+  } catch {
+    throw new Error("htmlUrl GitHub inválida.");
+  }
+
+  const expectedPath = "/" + observation.fullName.toLowerCase();
+  const actualPath = htmlUrl.pathname.replace(/\/$/, "").toLowerCase();
+  if (
+    htmlUrl.origin !== "https://github.com" ||
+    htmlUrl.username !== "" ||
+    htmlUrl.password !== "" ||
+    htmlUrl.port !== "" ||
+    htmlUrl.search !== "" ||
+    htmlUrl.hash !== "" ||
+    actualPath !== expectedPath
+  ) {
+    throw new Error("htmlUrl GitHub no corresponde al repositorio observado.");
+  }
+
+  if (
+    observation.description !== null &&
+    (typeof observation.description !== "string" || observation.description.length > 500)
+  ) {
+    throw new Error("description GitHub inválida.");
+  }
+
+  for (const [field, value] of [
+    ["stars", observation.stars],
+    ["forks", observation.forks],
+    ["openIssuesAndPullRequests", observation.openIssuesAndPullRequests],
+  ]) {
+    if (!Number.isInteger(value) || value < 0) {
+      throw new Error(field + " inválido.");
+    }
+  }
+
+  if (
+    observation.contributorCount !== null &&
+    (!Number.isInteger(observation.contributorCount) || observation.contributorCount < 0)
+  ) {
+    throw new Error("contributorCount inválido.");
+  }
+
+  if (
+    observation.language !== null &&
+    (typeof observation.language !== "string" ||
+      observation.language.length < 1 ||
+      observation.language.length > 80)
+  ) {
+    throw new Error("language GitHub inválido.");
+  }
+
+  if (!isCanonicalIsoUtc(observation.updatedAt)) {
+    throw new Error("updatedAt GitHub inválido.");
+  }
+
+  return observation;
+}
+
 export function validateRepositoryConfig(value) {
   if (
     !value ||
@@ -23,7 +104,8 @@ export function validateRepositoryConfig(value) {
     return repository;
   });
 
-  if (new Set(repositories).size !== repositories.length) {
+  const normalizedRepositories = repositories.map((repository) => repository.toLowerCase());
+  if (new Set(normalizedRepositories).size !== repositories.length) {
     throw new Error("El catálogo GitHub contiene repositorios duplicados.");
   }
 
@@ -68,6 +150,10 @@ export function buildSnapshotPersistenceBatch({
     throw new Error("Se requiere al menos una observación para persistir.");
   }
 
+  if (observations.length > 50) {
+    throw new Error("Demasiadas observaciones GitHub en un único run.");
+  }
+
   if (!["scheduled", "manual", "backfill"].includes(runKind)) {
     throw new Error("runKind inválido.");
   }
@@ -76,10 +162,35 @@ export function buildSnapshotPersistenceBatch({
     throw new Error("Cantidad de fallos inválida.");
   }
 
+  const validatedObservations = observations.map(validateObservation);
+
+  if (validatedObservations.length + failures > 50) {
+    throw new Error("El run GitHub excede el catálogo máximo permitido.");
+  }
+  const githubIds = validatedObservations.map((observation) => observation.githubId);
+  const fullNames = validatedObservations.map((observation) => observation.fullName.toLowerCase());
+
+  if (new Set(githubIds).size !== githubIds.length) {
+    throw new Error("El run GitHub contiene githubId duplicados.");
+  }
+
+  if (new Set(fullNames).size !== fullNames.length) {
+    throw new Error("El run GitHub contiene repositorios duplicados.");
+  }
+
   const normalizedObservedAt = new Date(observedAt).toISOString();
+  const bucketObservedAt = floorToSnapshotBucket(normalizedObservedAt);
+  if (bucketObservedAt !== normalizedObservedAt) {
+    throw new Error(
+      "observedAt debe coincidir exactamente con un bucket UTC de " +
+        SNAPSHOT_BUCKET_HOURS +
+        " horas.",
+    );
+  }
+
   const runId = "github-snapshot:" + normalizedObservedAt;
   const status = failures === 0 ? "succeeded" : "partial";
-  const totalSeen = observations.length + failures;
+  const totalSeen = validatedObservations.length + failures;
 
   const batch = [
     {
@@ -109,7 +220,7 @@ export function buildSnapshotPersistenceBatch({
     },
   ];
 
-  for (const observation of observations) {
+  for (const observation of validatedObservations) {
     const itemId = "github-" + observation.githubId;
     const contentHash = hashRepositoryContent(observation);
 
@@ -176,7 +287,7 @@ export function buildSnapshotPersistenceBatch({
       status,
       normalizedObservedAt,
       totalSeen,
-      observations.length,
+      validatedObservations.length,
       failures,
       failures > 0 ? "upstream_partial_failure" : null,
       runId,

@@ -9,7 +9,7 @@ export async function GET() {
     return Response.json(
       {
         ...result,
-        fetchedAt: new Date().toISOString(),
+        servedAt: new Date().toISOString(),
       },
       {
         headers: {

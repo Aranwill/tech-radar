@@ -6,12 +6,14 @@ import {
   validateRepositoryConfig,
 } from "./lib/github-snapshot-core.mjs";
 import { cloudflareD1Credentials } from "./lib/cloudflare-d1-config.mjs";
+import { parseBoundedJson } from "./lib/bounded-json.mjs";
 
 const GITHUB_API_ORIGIN = "https://api.github.com";
 const GITHUB_API_VERSION = "2026-03-10";
 const CLOUDFLARE_API_ORIGIN = "https://api.cloudflare.com";
 const REQUEST_TIMEOUT_MS = 10_000;
 const MAX_RESPONSE_BYTES = 1_000_000;
+const REPOSITORY_CONCURRENCY = 4;
 
 function hasFlag(name) {
   return process.argv.includes(name);
@@ -33,25 +35,6 @@ function githubHeaders() {
   };
 }
 
-async function parseBoundedJson(response) {
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.toLowerCase().includes("application/json")) {
-    throw new Error("Respuesta JSON esperada.");
-  }
-
-  const advertisedLength = Number(response.headers.get("content-length") ?? "0");
-  if (Number.isFinite(advertisedLength) && advertisedLength > MAX_RESPONSE_BYTES) {
-    throw new Error("Respuesta externa demasiado grande.");
-  }
-
-  const buffer = await response.arrayBuffer();
-  if (buffer.byteLength > MAX_RESPONSE_BYTES) {
-    throw new Error("Respuesta externa demasiado grande.");
-  }
-
-  return JSON.parse(new TextDecoder().decode(buffer));
-}
-
 function parseLastPage(linkHeader) {
   if (!linkHeader) return null;
 
@@ -60,7 +43,17 @@ function parseLastPage(linkHeader) {
     const match = segment.match(/<([^>]+)>/);
     if (!match) return null;
 
-    const page = Number(new URL(match[1]).searchParams.get("page"));
+    const linkUrl = new URL(match[1]);
+    if (
+      linkUrl.origin !== GITHUB_API_ORIGIN ||
+      linkUrl.username !== "" ||
+      linkUrl.password !== "" ||
+      linkUrl.port !== ""
+    ) {
+      return null;
+    }
+
+    const page = Number(linkUrl.searchParams.get("page"));
     if (Number.isInteger(page) && page >= 0) return page;
   }
 
@@ -80,7 +73,10 @@ async function fetchContributorCount(repository) {
   if (response.status === 202) return null;
   if (!response.ok) return null;
 
-  const payload = await parseBoundedJson(response);
+  const payload = await parseBoundedJson(response, {
+    maxBytes: MAX_RESPONSE_BYTES,
+    label: "Respuesta externa",
+  });
   if (!Array.isArray(payload) || payload.length === 0) return 0;
 
   return parseLastPage(response.headers.get("link")) ?? 1;
@@ -91,9 +87,13 @@ function assertRepositoryPayload(payload, expectedRepository) {
     !payload ||
     !Number.isInteger(payload.id) ||
     payload.id <= 0 ||
-    payload.full_name !== expectedRepository ||
+    typeof payload.full_name !== "string" ||
+    payload.full_name.toLowerCase() !== expectedRepository.toLowerCase() ||
     typeof payload.html_url !== "string" ||
-    new URL(payload.html_url).hostname !== "github.com" ||
+    new URL(payload.html_url).origin !== "https://github.com" ||
+    new URL(payload.html_url).username !== "" ||
+    new URL(payload.html_url).password !== "" ||
+    new URL(payload.html_url).port !== "" ||
     !Number.isInteger(payload.stargazers_count) ||
     payload.stargazers_count < 0 ||
     !Number.isInteger(payload.forks_count) ||
@@ -120,7 +120,10 @@ async function fetchRepositoryObservation(repository) {
     throw new Error("GitHub repository respondió " + repoResponse.status + ".");
   }
 
-  const payload = await parseBoundedJson(repoResponse);
+  const payload = await parseBoundedJson(repoResponse, {
+    maxBytes: MAX_RESPONSE_BYTES,
+    label: "GitHub",
+  });
   assertRepositoryPayload(payload, repository);
 
   return {
@@ -160,7 +163,10 @@ async function persistToD1(batch) {
     },
   );
 
-  const payload = await parseBoundedJson(response);
+  const payload = await parseBoundedJson(response, {
+    maxBytes: MAX_RESPONSE_BYTES,
+    label: "Respuesta externa",
+  });
   const results = Array.isArray(payload?.result) ? payload.result : [];
   const allSucceeded =
     response.ok &&
@@ -193,9 +199,14 @@ const observedAt = explicitAt
   ? new Date(explicitAt).toISOString()
   : floorToSnapshotBucket(new Date());
 
-const settled = await Promise.allSettled(
-  repositories.map((repository) => fetchRepositoryObservation(repository)),
-);
+const settled = [];
+
+for (let index = 0; index < repositories.length; index += REPOSITORY_CONCURRENCY) {
+  const chunk = repositories.slice(index, index + REPOSITORY_CONCURRENCY);
+  settled.push(...await Promise.allSettled(
+    chunk.map((repository) => fetchRepositoryObservation(repository)),
+  ));
+}
 
 const observations = settled.flatMap((result) =>
   result.status === "fulfilled" ? [result.value] : [],
@@ -229,6 +240,14 @@ const summary = {
     contributorCount: observation.contributorCount,
   })),
 };
+
+if (
+  hasFlag("--persist") &&
+  process.env.GITHUB_ACTIONS === "true" &&
+  process.env.GITHUB_REF !== "refs/heads/main"
+) {
+  throw new Error("Persistencia D1 rechazada fuera de refs/heads/main.");
+}
 
 if (hasFlag("--persist")) {
   const d1 = await persistToD1(persistence.batch);

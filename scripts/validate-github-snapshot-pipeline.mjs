@@ -17,16 +17,59 @@ function applyBatch(db, batch) {
   }
 }
 
+function assertBuildRejects(input, message) {
+  let rejected = false;
+  try {
+    buildSnapshotPersistenceBatch(input);
+  } catch {
+    rejected = true;
+  }
+  assert(rejected, message);
+}
+
 const config = JSON.parse(
   readFileSync(join(process.cwd(), "config", "github-repositories.json"), "utf8"),
 );
 const repositories = validateRepositoryConfig(config);
 assert(repositories.length === 3, "El fixture curado esperado cambió sin actualizar la validación.");
 
+const snapshotWorkflow = readFileSync(
+  join(process.cwd(), ".github", "workflows", "github-snapshots.yml"),
+  "utf8",
+);
+assert(
+  snapshotWorkflow.includes("node scripts/github-snapshot.mjs --manual --persist"),
+  "La persistencia manual no preserva run_kind=manual.",
+);
+
 assert(
   floorToSnapshotBucket("2026-09-29T23:59:59.999Z") === "2026-09-29T18:00:00.000Z",
   "El bucket UTC de 6h no es determinista.",
 );
+
+let unalignedBucketRejected = false;
+try {
+  buildSnapshotPersistenceBatch({
+    observedAt: "2026-09-29T18:01:00.000Z",
+    observations: [{
+      githubId: 999,
+      fullName: "example/unaligned",
+      description: null,
+      htmlUrl: "https://github.com/example/unaligned",
+      stars: 1,
+      forks: 0,
+      openIssuesAndPullRequests: 0,
+      contributorCount: null,
+      language: null,
+      updatedAt: "2026-09-29T18:00:00.000Z",
+    }],
+    failures: 0,
+    runKind: "manual",
+  });
+} catch {
+  unalignedBucketRejected = true;
+}
+assert(unalignedBucketRejected, "Un observedAt fuera del bucket UTC fue aceptado.");
 
 const db = new DatabaseSync(":memory:");
 
@@ -55,6 +98,65 @@ try {
   };
 
   const firstAt = "2026-09-29T18:00:00.000Z";
+
+  assertBuildRejects(
+    {
+      observedAt: firstAt,
+      observations: [{
+        ...baseObservation,
+        htmlUrl: "https://github.com/example/other-project",
+      }],
+      failures: 0,
+      runKind: "manual",
+    },
+    "Una canonical URL ajena al repositorio fue aceptada.",
+  );
+
+  assertBuildRejects(
+    {
+      observedAt: firstAt,
+      observations: [{ ...baseObservation, stars: -1 }],
+      failures: 0,
+      runKind: "manual",
+    },
+    "Una métrica GitHub negativa fue aceptada.",
+  );
+
+  assertBuildRejects(
+    {
+      observedAt: firstAt,
+      observations: [
+        baseObservation,
+        {
+          ...baseObservation,
+          fullName: "example/project-copy",
+          htmlUrl: "https://github.com/example/project-copy",
+        },
+      ],
+      failures: 0,
+      runKind: "manual",
+    },
+    "Un githubId duplicado fue aceptado.",
+  );
+
+  assertBuildRejects(
+    {
+      observedAt: firstAt,
+      observations: [
+        baseObservation,
+        {
+          ...baseObservation,
+          githubId: 124,
+          fullName: "Example/Project",
+          htmlUrl: "https://github.com/Example/Project",
+        },
+      ],
+      failures: 0,
+      runKind: "manual",
+    },
+    "Un repositorio duplicado por case-folding fue aceptado.",
+  );
+
   const first = buildSnapshotPersistenceBatch({
     observedAt: firstAt,
     observations: [baseObservation],
@@ -113,6 +215,9 @@ try {
       snapshotCount,
       rerunIdempotent: true,
       partialRunTracked: true,
+      unalignedBucketRejected: true,
+      observationBoundaryValidated: true,
+      manualPersistSemanticsValidated: true,
     }),
   );
 } finally {

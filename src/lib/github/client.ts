@@ -1,31 +1,52 @@
 import { z } from "zod";
 import repositoryConfig from "../../../config/github-repositories.json";
 import { repositoryBlockSchema, type RepositoryBlock } from "@/lib/ui-contract";
+import { parseBoundedJson } from "@/lib/http/bounded-json";
 
 const GITHUB_API_VERSION = "2026-03-10";
 const GITHUB_API_ORIGIN = "https://api.github.com";
 const CACHE_SECONDS = 900;
 const REQUEST_TIMEOUT_MS = 8_000;
 const MAX_RESPONSE_BYTES = 1_000_000;
+const REPOSITORY_CONCURRENCY = 4;
 
 const curatedRepositoryConfigSchema = z.object({
   version: z.literal(1),
   repositories: z.array(
     z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/),
   ).min(1).max(50),
+}).superRefine((value, context) => {
+  const normalized = value.repositories.map((repository) => repository.toLowerCase());
+  if (new Set(normalized).size !== normalized.length) {
+    context.addIssue({
+      code: "custom",
+      path: ["repositories"],
+      message: "El catálogo GitHub contiene repositorios duplicados.",
+    });
+  }
 });
 
 const curatedRepositories = curatedRepositoryConfigSchema.parse(repositoryConfig).repositories;
 
-const githubWebUrlSchema = z.string().url().refine((value) => {
+function hasExactOrigin(value: string, expectedOrigin: string) {
   const url = new URL(value);
-  return url.protocol === "https:" && url.hostname === "github.com";
-}, "GitHub devolvió una URL web no permitida.");
+  return (
+    url.origin === expectedOrigin &&
+    url.username === "" &&
+    url.password === "" &&
+    url.port === ""
+  );
+}
 
-const githubAvatarUrlSchema = z.string().url().refine((value) => {
-  const url = new URL(value);
-  return url.protocol === "https:" && url.hostname === "avatars.githubusercontent.com";
-}, "GitHub devolvió una URL de avatar no permitida.");
+const githubWebUrlSchema = z.string().url().refine(
+  (value) => hasExactOrigin(value, "https://github.com"),
+  "GitHub devolvió una URL web no permitida.",
+);
+
+const githubAvatarUrlSchema = z.string().url().refine(
+  (value) => hasExactOrigin(value, "https://avatars.githubusercontent.com"),
+  "GitHub devolvió una URL de avatar no permitida.",
+);
 
 const githubRepositorySchema = z.object({
   id: z.number().int().positive(),
@@ -62,25 +83,6 @@ function githubHeaders() {
   };
 }
 
-async function parseBoundedJson(response: Response) {
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.toLowerCase().includes("application/json")) {
-    throw new Error("GitHub devolvió un content-type inesperado.");
-  }
-
-  const advertisedLength = Number(response.headers.get("content-length") ?? "0");
-  if (Number.isFinite(advertisedLength) && advertisedLength > MAX_RESPONSE_BYTES) {
-    throw new Error("GitHub devolvió una respuesta demasiado grande.");
-  }
-
-  const payload = await response.arrayBuffer();
-  if (payload.byteLength > MAX_RESPONSE_BYTES) {
-    throw new Error("GitHub devolvió una respuesta demasiado grande.");
-  }
-
-  return JSON.parse(new TextDecoder().decode(payload)) as unknown;
-}
-
 function getLastPageFromLinkHeader(linkHeader: string | null) {
   if (!linkHeader) return null;
 
@@ -90,7 +92,10 @@ function getLastPageFromLinkHeader(linkHeader: string | null) {
     const match = segment.match(/<([^>]+)>/);
     if (!match) return null;
 
-    const page = Number(new URL(match[1]).searchParams.get("page"));
+    const linkUrl = new URL(match[1]);
+    if (!hasExactOrigin(linkUrl.href, GITHUB_API_ORIGIN)) return null;
+
+    const page = Number(linkUrl.searchParams.get("page"));
     return Number.isInteger(page) && page >= 0 ? page : null;
   }
 
@@ -112,7 +117,10 @@ async function fetchContributorCount(repository: string) {
     if (response.status === 202) return null;
     if (!response.ok) throw new Error("GitHub contributors respondió " + response.status + ".");
 
-    const raw = contributorProbeSchema.parse(await parseBoundedJson(response));
+    const raw = contributorProbeSchema.parse(await parseBoundedJson(response, {
+      maxBytes: MAX_RESPONSE_BYTES,
+      label: "GitHub",
+    }));
     if (raw.length === 0) return 0;
 
     return getLastPageFromLinkHeader(response.headers.get("link")) ?? 1;
@@ -140,7 +148,10 @@ async function fetchTopContributors(repository: string) {
     if (response.status === 202) return null;
     if (!response.ok) throw new Error("GitHub contributors destacados respondió " + response.status + ".");
 
-    const raw = z.array(githubContributorSchema).max(8).parse(await parseBoundedJson(response));
+    const raw = z.array(githubContributorSchema).max(8).parse(await parseBoundedJson(response, {
+      maxBytes: MAX_RESPONSE_BYTES,
+      label: "GitHub",
+    }));
 
     return raw.map((contributor) => ({
       login: contributor.login,
@@ -171,7 +182,14 @@ async function fetchRepository(repository: string): Promise<RepositoryBlock> {
 
   if (!response.ok) throw new Error("GitHub respondió " + response.status + ".");
 
-  const raw = githubRepositorySchema.parse(await parseBoundedJson(response));
+  const raw = githubRepositorySchema.parse(await parseBoundedJson(response, {
+    maxBytes: MAX_RESPONSE_BYTES,
+    label: "GitHub",
+  }));
+
+  if (raw.full_name.toLowerCase() !== repository.toLowerCase()) {
+    throw new Error("GitHub devolvió un repositorio distinto del solicitado.");
+  }
 
   return repositoryBlockSchema.parse({
     id: "github-" + raw.id,
@@ -192,7 +210,12 @@ async function fetchRepository(repository: string): Promise<RepositoryBlock> {
 }
 
 export async function getCuratedGithubRepositories() {
-  const settled = await Promise.allSettled(curatedRepositories.map(fetchRepository));
+  const settled: PromiseSettledResult<RepositoryBlock>[] = [];
+
+  for (let index = 0; index < curatedRepositories.length; index += REPOSITORY_CONCURRENCY) {
+    const chunk = curatedRepositories.slice(index, index + REPOSITORY_CONCURRENCY);
+    settled.push(...await Promise.allSettled(chunk.map(fetchRepository)));
+  }
   const repositories = settled.flatMap((result) => result.status === "fulfilled" ? [result.value] : []);
   const failed = settled.filter((result) => result.status === "rejected").length;
 

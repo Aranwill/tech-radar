@@ -142,7 +142,7 @@ export function RepositoryCard({
                   className="contributor-avatar"
                   href={contributor.profileUrl}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   key={contributor.login}
                   title={`${contributor.login} · ${contributor.contributions.toLocaleString("es-AR")} contribuciones`}
                   aria-label={`Abrir perfil de ${contributor.login}`}
@@ -174,7 +174,7 @@ export function RepositoryCard({
         <span className="card-meta">
           {isLive ? "Fuente primaria · API oficial" : "Snapshot propio"}
         </span>
-        <a className="card-link" href={block.url} target="_blank" rel="noreferrer">
+        <a className="card-link" href={block.url} target="_blank" rel="noopener noreferrer">
           Abrir repo ↗
         </a>
       </div>

@@ -9,7 +9,7 @@ const contentSecurityPolicy = [
   "frame-ancestors 'none'",
   "frame-src 'none'",
   "form-action 'self'",
-  "img-src 'self' data: blob: https://avatars.githubusercontent.com",
+  "img-src 'self' data: https://avatars.githubusercontent.com",
   "font-src 'self' data:",
   "media-src 'self'",
   "style-src 'self' 'unsafe-inline'",
@@ -17,9 +17,9 @@ const contentSecurityPolicy = [
     ? "script-src 'self' 'unsafe-inline'"
     : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "script-src-attr 'none'",
-  "worker-src 'self' blob:",
+  "worker-src 'self'",
   "manifest-src 'self'",
-  "connect-src 'self' https://api.open-meteo.com https://geocoding-api.open-meteo.com",
+  "connect-src 'self'",
   ...(isProduction ? ["upgrade-insecure-requests"] : []),
 ].join("; ");
 
@@ -34,7 +34,7 @@ const securityHeaders = [
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), payment=(), usb=(), geolocation=(self)",
+    value: "camera=(), microphone=(), payment=(), usb=(), geolocation=()",
   },
   ...(isProduction
     ? [{ key: "Strict-Transport-Security", value: "max-age=31536000" }]

@@ -2,17 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { RepositoryCard } from "@/components/RepositoryCard";
-import type { RepositoryBlock } from "@/lib/ui-contract";
-
-type GithubApiResponse = {
-  repositories: RepositoryBlock[];
-  partial: boolean;
-  fetchedAt: string;
-};
+import {
+  githubRepositoriesApiSchema,
+  type GithubRepositoriesApiResponse,
+} from "@/lib/ui-contract";
 
 type LoadState =
   | { status: "loading" }
-  | { status: "ready"; data: GithubApiResponse }
+  | { status: "ready"; data: GithubRepositoriesApiResponse }
   | { status: "error" };
 
 export function LiveGithubRepositories() {
@@ -32,7 +29,7 @@ export function LiveGithubRepositories() {
           throw new Error("GitHub datasource unavailable");
         }
 
-        const data = (await response.json()) as GithubApiResponse;
+        const data = githubRepositoriesApiSchema.parse(await response.json());
         setState({ status: "ready", data });
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {

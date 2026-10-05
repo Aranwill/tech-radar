@@ -24,13 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
 
-    env:
-      GITHUB_TOKEN: ${{ github.token }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
-      CLOUDFLARE_D1_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
-      PERSIST_SNAPSHOT: ${{ github.event_name == 'schedule' || inputs.persist == true }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
@@ -48,16 +41,34 @@ jobs:
         with:
           node-version: 24
 
+      - name: Reject D1 persistence outside main
+        if: github.event_name == 'workflow_dispatch' && inputs.persist == true && github.ref != 'refs/heads/main'
+        shell: bash
+        run: |
+          echo "::error::D1 persistence is only permitted from refs/heads/main."
+          exit 1
+
       - name: Validate snapshot persistence contract
         run: node scripts/validate-github-snapshot-pipeline.mjs
 
-      - name: Collect GitHub snapshot
+      - name: Collect GitHub snapshot without persistence
+        if: github.event_name == 'workflow_dispatch' && inputs.persist != true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/github-snapshot.mjs --manual
+
+      - name: Persist GitHub snapshot to D1
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.persist == true)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+          CLOUDFLARE_D1_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
-
-          if [[ "$PERSIST_SNAPSHOT" == "true" ]]; then
-            node scripts/github-snapshot.mjs --persist
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            node scripts/github-snapshot.mjs --manual --persist
           else
-            node scripts/github-snapshot.mjs --manual
+            node scripts/github-snapshot.mjs --persist
           fi

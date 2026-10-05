@@ -13,7 +13,7 @@ blockExoticSubdeps: true
 saveExact: true
 
 audit:
-  level: high
+  level: moderate
 
 allowBuilds:
   workerd: true

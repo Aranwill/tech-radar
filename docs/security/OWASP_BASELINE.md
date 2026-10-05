@@ -18,14 +18,14 @@ Referencias adoptadas:
 | --- | --- |
 | A01 Broken Access Control | Sin endpoints mutables ni autenticación todavía. Datasources externos usan rutas fijas/allowlist, no URLs suministradas por usuario. Futuras mutaciones serán deny-by-default y autorizadas server-side. |
 | A02 Security Misconfiguration | Security headers, CSP, poweredByHeader deshabilitado, permisos mínimos en Actions, configuración de producción separada y sin secretos cliente. |
-| A03 Software Supply Chain Failures | pnpm fijado, lockfile congelado, cooldown de paquetes, bloqueo de subdependencias exóticas, Dependabot, audit y Actions fijadas a SHA. |
+| A03 Software Supply Chain Failures | pnpm fijado, lockfile congelado, cooldown de paquetes, bloqueo de subdependencias exóticas, Dependabot, audit del grafo completo desde moderate, Actions fijadas a SHA y prohibición de ejecutores fuera del lockfile en CI. |
 | A04 Cryptographic Failures | HTTPS obligatorio para URLs externas; secretos sólo server-side. No existe almacenamiento sensible ni criptografía propia en V1. |
 | A05 Injection | Zod en fronteras externas, React escaping, catálogo UI explícito y prohibición automatizada de eval, new Function, document.write y dangerouslySetInnerHTML. |
 | A06 Insecure Design | Threat model explícito, trust boundaries y feature gates. A2UI/IA no pueden introducir código arbitrario. |
 | A07 Authentication Failures | No hay autenticación en V1. Antes de agregarla se requiere diseño de sesión, MFA/provider y controles ASVS aplicables. |
 | A08 Software or Data Integrity Failures | Lockfile, Actions inmutables, validación de datos upstream y procedencia explícita. |
 | A09 Security Logging & Alerting Failures | Logs server-side de fallos de proveedor sin secretos. Observabilidad/alertas de producción quedan como gate previo al despliegue público estable. |
-| A10 Mishandling of Exceptional Conditions | Timeouts, tamaño máximo de respuesta, content-type esperado, resultados parciales y errores genéricos hacia el cliente. |
+| A10 Mishandling of Exceptional Conditions | Timeouts, límite duro de respuesta durante streaming, content-type esperado, concurrencia acotada, resultados parciales y errores genéricos hacia el cliente. |
 
 ## ASVS
 

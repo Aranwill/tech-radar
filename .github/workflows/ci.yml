@@ -56,6 +56,9 @@ jobs:
       - name: Validate GitHub history
         run: pnpm history:validate
 
+      - name: Validate bounded external JSON
+        run: pnpm http:bounded-json:validate
+
       - name: Typecheck
         run: pnpm typecheck
 
@@ -65,5 +68,113 @@ jobs:
       - name: Build Cloudflare / vinext runtime
         run: pnpm build:vinext
 
+      - name: Smoke test Cloudflare / vinext runtime
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          pnpm start:vinext --host 127.0.0.1 --port 4173 > /tmp/dalil-vinext.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:4173/ >/tmp/dalil-root.html; then
+              break
+            fi
+            if [[ "$attempt" -eq 30 ]]; then
+              cat /tmp/dalil-vinext.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+          curl --fail --silent --show-error --dump-header /tmp/dalil-headers.txt \
+            --output /tmp/dalil-root.html \
+            http://127.0.0.1:4173/
+
+          grep -qi '^content-security-policy:' /tmp/dalil-headers.txt
+          grep -qi '^x-content-type-options: nosniff' /tmp/dalil-headers.txt
+          grep -qi '^permissions-policy:.*geolocation=()' /tmp/dalil-headers.txt
+          grep -qi '^cross-origin-opener-policy: same-origin' /tmp/dalil-headers.txt
+          grep -qi '^cross-origin-resource-policy: same-origin' /tmp/dalil-headers.txt
+          grep -qi '^x-frame-options: DENY' /tmp/dalil-headers.txt
+          if grep -qi '^x-powered-by:' /tmp/dalil-headers.txt; then
+            echo "::error::X-Powered-By must remain disabled."
+            exit 1
+          fi
+          if grep -qi '^access-control-allow-origin:' /tmp/dalil-headers.txt; then
+            echo "::error::Unexpected CORS header on root route."
+            exit 1
+          fi
+
+          curl --fail --silent --show-error --dump-header /tmp/dalil-api-headers.txt \
+            --header 'Accept: application/json' \
+            http://127.0.0.1:4173/api/github/repositories \
+            --output /tmp/dalil-github.json
+
+          grep -qi '^content-type: application/json' /tmp/dalil-api-headers.txt
+          grep -qi '^cache-control: public,' /tmp/dalil-api-headers.txt
+          grep -qi '^x-content-type-options: nosniff' /tmp/dalil-api-headers.txt
+          if grep -qi '^access-control-allow-origin:' /tmp/dalil-api-headers.txt; then
+            echo "::error::Unexpected CORS header on GitHub API route."
+            exit 1
+          fi
+
+          post_status="$(curl --silent --output /tmp/dalil-post.json --write-out '%{http_code}' \
+            --request POST http://127.0.0.1:4173/api/github/repositories)"
+          if [[ "$post_status" != "405" ]]; then
+            echo "::error::POST /api/github/repositories returned $post_status instead of 405."
+            exit 1
+          fi
+
+          node --input-type=module - <<'NODE'
+          import { readFileSync } from "node:fs";
+
+          const payload = JSON.parse(readFileSync("/tmp/dalil-github.json", "utf8"));
+          const names = payload.repositories?.map((repository) => repository.name).sort();
+
+          const expected = [
+            "a2ui-project/a2ui",
+            "huggingface/transformers",
+            "modelcontextprotocol/ext-apps",
+          ].sort();
+
+          if (
+            JSON.stringify(names) !== JSON.stringify(expected) ||
+            typeof payload.partial !== "boolean" ||
+            typeof payload.servedAt !== "string"
+          ) {
+            throw new Error("Runtime GitHub API contract mismatch.");
+          }
+          NODE
+
       - name: Audit dependency graph
         run: pnpm audit --audit-level=moderate
+
+  codeql:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          queries: security-extended
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4
+        with:
+          category: "/language:javascript-typescript"
