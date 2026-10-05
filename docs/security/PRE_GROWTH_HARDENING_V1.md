@@ -39,6 +39,7 @@ Endurecer DALIL antes de ampliar fuentes, endpoints, D1 runtime o capacidades de
 | DALIL-SEC-21 | DEFENSE-IN-DEPTH | CLOSED-IN-CI | CodeQL JS/TS con `security-extended` se ejecuta dentro del CI y publicó SARIF correctamente. |
 | DALIL-SEC-22 | MEDIUM-LOW | DEFERRED-DESIGN | CSP de producción aún requiere `script-src 'unsafe-inline'`. Vinext soporta nonces, pero adoptarlos cambia semántica de render/cache y requiere un gate dedicado. |
 | DALIL-SEC-23 | INTEGRITY | CLOSED-IN-CODE | El core de snapshots valida identidad, canonical URL, métricas, timestamps, duplicados y conserva `run_kind=manual` en persistencia manual. |
+| DALIL-SEC-24 | PLATFORM/OPS | PENDING-CONFIG | Rate limiting, Workers Observability, alertas y dashboards Cloudflare deben configurarse antes del deploy estable según `CLOUDFLARE_OPERATIONS_HARDENING_V1.md`. |
 
 ## Supply chain pendiente
 
@@ -94,8 +95,9 @@ Cuando el propietario vuelva a su PC personal:
 6. `pnpm build:vinext`;
 7. `pnpm start:vinext` y parity E2E;
 8. revisión de Rulesets / Branch Protection;
-9. configurar/verificar rate limiting distribuido para endpoints públicos antes del deploy estable;
-10. recién después, cualquier deploy o configuración de D1 runtime.
+9. ejecutar `docs/security/CLOUDFLARE_OPERATIONS_HARDENING_V1.md`: rate limiting, observabilidad, dashboards y alertas;
+10. configurar/verificar rate limiting distribuido para endpoints públicos antes del deploy estable;
+11. recién después, cualquier deploy o configuración de D1 runtime.
 
 ## Fuera de alcance
 
