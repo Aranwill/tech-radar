@@ -75,7 +75,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          pnpm start:vinext -- --host 127.0.0.1 --port 4173 > /tmp/dalil-vinext.log 2>&1 &
+          pnpm start:vinext --host 127.0.0.1 --port 4173 > /tmp/dalil-vinext.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
 
