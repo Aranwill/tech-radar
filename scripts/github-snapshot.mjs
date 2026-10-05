@@ -87,7 +87,8 @@ function assertRepositoryPayload(payload, expectedRepository) {
     !payload ||
     !Number.isInteger(payload.id) ||
     payload.id <= 0 ||
-    payload.full_name !== expectedRepository ||
+    typeof payload.full_name !== "string" ||
+    payload.full_name.toLowerCase() !== expectedRepository.toLowerCase() ||
     typeof payload.html_url !== "string" ||
     new URL(payload.html_url).origin !== "https://github.com" ||
     new URL(payload.html_url).username !== "" ||
