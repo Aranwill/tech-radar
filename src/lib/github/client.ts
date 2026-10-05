@@ -104,7 +104,7 @@ async function fetchContributorCount(repository: string) {
       {
         headers: githubHeaders(),
         next: { revalidate: CACHE_SECONDS },
-        redirect: "error",
+        redirect: "manual",
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       },
     );
@@ -132,7 +132,7 @@ async function fetchTopContributors(repository: string) {
       {
         headers: githubHeaders(),
         next: { revalidate: CACHE_SECONDS },
-        redirect: "error",
+        redirect: "manual",
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       },
     );
@@ -162,7 +162,7 @@ async function fetchRepository(repository: string): Promise<RepositoryBlock> {
     fetch(GITHUB_API_ORIGIN + "/repos/" + repository, {
       headers: githubHeaders(),
       next: { revalidate: CACHE_SECONDS },
-      redirect: "error",
+      redirect: "manual",
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     }),
     fetchContributorCount(repository),
