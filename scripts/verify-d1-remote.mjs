@@ -1,4 +1,5 @@
 import { cloudflareD1Credentials } from "./lib/cloudflare-d1-config.mjs";
+import { parseBoundedJson } from "./lib/bounded-json.mjs";
 
 const CLOUDFLARE_API_ORIGIN = "https://api.cloudflare.com";
 const REQUEST_TIMEOUT_MS = 10_000;
@@ -16,25 +17,6 @@ const REQUIRED_TABLES = Object.freeze([
   "claim_evidence",
   "country_metrics_daily",
 ]);
-
-async function parseBoundedJson(response) {
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.toLowerCase().includes("application/json")) {
-    throw new Error("Cloudflare no devolvió JSON.");
-  }
-
-  const advertisedLength = Number(response.headers.get("content-length") ?? "0");
-  if (Number.isFinite(advertisedLength) && advertisedLength > MAX_RESPONSE_BYTES) {
-    throw new Error("Respuesta D1 demasiado grande.");
-  }
-
-  const buffer = await response.arrayBuffer();
-  if (buffer.byteLength > MAX_RESPONSE_BYTES) {
-    throw new Error("Respuesta D1 demasiado grande.");
-  }
-
-  return JSON.parse(new TextDecoder().decode(buffer));
-}
 
 function cloudflareErrorCodes(payload) {
   if (!Array.isArray(payload?.errors)) return [];
@@ -64,7 +46,10 @@ async function queryD1({ accountId, databaseId, token, body }) {
     },
   );
 
-  const payload = await parseBoundedJson(response);
+  const payload = await parseBoundedJson(response, {
+    maxBytes: MAX_RESPONSE_BYTES,
+    label: "Cloudflare D1",
+  });
   const results = Array.isArray(payload?.result) ? payload.result : [];
 
   if (
