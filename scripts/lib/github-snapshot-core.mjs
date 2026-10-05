@@ -77,6 +77,15 @@ export function buildSnapshotPersistenceBatch({
   }
 
   const normalizedObservedAt = new Date(observedAt).toISOString();
+  const bucketObservedAt = floorToSnapshotBucket(normalizedObservedAt);
+  if (bucketObservedAt !== normalizedObservedAt) {
+    throw new Error(
+      "observedAt debe coincidir exactamente con un bucket UTC de " +
+        SNAPSHOT_BUCKET_HOURS +
+        " horas.",
+    );
+  }
+
   const runId = "github-snapshot:" + normalizedObservedAt;
   const status = failures === 0 ? "succeeded" : "partial";
   const totalSeen = observations.length + failures;
