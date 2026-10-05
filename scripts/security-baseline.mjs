@@ -174,6 +174,22 @@ for (const [name, command] of Object.entries(packageJson.scripts ?? {})) {
   }
 }
 
+const exactSemver = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
+for (const section of ["dependencies", "devDependencies"]) {
+  for (const [name, version] of Object.entries(packageJson[section] ?? {})) {
+    if (!exactSemver.test(String(version))) {
+      fail(
+        "package.json: " +
+          section +
+          "." +
+          name +
+          " debe usar una versión exacta, no " +
+          JSON.stringify(version),
+      );
+    }
+  }
+}
+
 if (!existsSync(join(root, "pnpm-lock.yaml"))) {
   fail("pnpm-lock.yaml: lockfile obligatorio ausente");
 }
@@ -183,6 +199,7 @@ for (const required of [
   "minimumReleaseAge: 1440",
   "blockExoticSubdeps: true",
   "saveExact: true",
+  "level: moderate",
 ]) {
   if (!workspace.includes(required)) {
     fail("pnpm-workspace.yaml: falta política " + required);
