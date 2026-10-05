@@ -162,11 +162,11 @@ export function buildSnapshotPersistenceBatch({
     throw new Error("Cantidad de fallos inválida.");
   }
 
+  const validatedObservations = observations.map(validateObservation);
+
   if (validatedObservations.length + failures > 50) {
     throw new Error("El run GitHub excede el catálogo máximo permitido.");
   }
-
-  const validatedObservations = observations.map(validateObservation);
   const githubIds = validatedObservations.map((observation) => observation.githubId);
   const fullNames = validatedObservations.map((observation) => observation.fullName.toLowerCase());
 
